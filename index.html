@@ -318,54 +318,78 @@
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 1. 初始化 Firebase 資源
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-        // 即時保存所有已報到賓客的 unique key 集合
-        window.checkedInGuests = new Set();
+        // 即時保存所有已報到賓客的 unique key 集合 (防禦載入：先與外部全域變數做合併)
+        window.checkedInGuests = window.checkedInGuests || new Set();
+        let app, auth, db, appId;
         let currentUser = null;
         let activeTableId = null; // 當前正被打開的名單桌號
 
-        // 2. 嚴格執行 RULE 3: 優先認證，成功後再執行 Firestore 查詢
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.error("Firebase 認證失敗:", err);
-            }
-        };
+        // 1. 安全防禦初始化機制（即使環境變數缺失，也能完美在本地端測試運行）
+        try {
+            const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : null;
+            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        initAuth();
-
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-                // 連線燈提示
-                document.getElementById('syncIndicator').innerHTML = `
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    已即時連線
-                `;
-                // 開始即時監聽資料庫
-                startListening();
+            if (firebaseConfig && firebaseConfig.apiKey) {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
             } else {
+                console.warn("Firebase 未配置或缺少 apiKey，將啟用本地模擬預覽模式。");
                 document.getElementById('syncIndicator').innerHTML = `
-                    <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                    未連線
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    本地預覽模式
                 `;
             }
-        });
+        } catch (err) {
+            console.error("Firebase 初始化遭遇異常:", err);
+            document.getElementById('syncIndicator').innerHTML = `
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                預覽模式 (未連線)
+            `;
+        }
+
+        // 2. 嚴格執行 RULE 3: 優先認證，成功後再執行 Firestore 查詢
+        if (auth) {
+            const initAuth = async () => {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (err) {
+                    console.error("Firebase 認證失敗:", err);
+                    document.getElementById('syncIndicator').innerHTML = `
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        認證失敗 (使用本地)
+                    `;
+                }
+            };
+
+            initAuth();
+
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (user) {
+                    // 連線燈提示
+                    document.getElementById('syncIndicator').innerHTML = `
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        已即時連線
+                    `;
+                    // 開始即時監聽資料庫
+                    startListening();
+                } else {
+                    document.getElementById('syncIndicator').innerHTML = `
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                        未連線
+                    `;
+                }
+            });
+        }
 
         // 3. 監聽報到狀態（即時同步）- 遵守 RULE 1 & 2
         function startListening() {
-            if (!currentUser) return;
+            if (!currentUser || !db) return;
 
             // 嚴格遵守路徑規則 1：公用協作資料放於 public/data 下
             const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
@@ -382,22 +406,21 @@
                 }
 
                 // 更新主地圖桌圈的「小綠點」狀態，讓招待一目了然哪桌有人報到
-                updateMapTableStatus();
+                window.updateMapTableStatus();
             }, (error) => {
                 console.error("即時資料庫監聽異常:", error);
             });
         }
 
-        // 即時更新地圖上的「小綠點」標示
-        function updateMapTableStatus() {
-            Object.keys(seatingData).forEach(tableId => {
+        // 即時更新地圖上的「小綠點」標示 (掛載到全域確保安全存取)
+        window.updateMapTableStatus = function() {
+            const currentSeatingData = window.seatingData || seatingData;
+            Object.keys(currentSeatingData).forEach(tableId => {
                 const targetWrapper = document.getElementById(`table-${tableId}`);
                 if (!targetWrapper) return;
 
-                const innerCircle = targetWrapper.firstElementChild;
-                
                 // 檢查此桌是否有任何一位賓客已報到
-                const hasAnyCheckin = seatingData[tableId].some(guest => {
+                const hasAnyCheckin = currentSeatingData[tableId].some(guest => {
                     const guestKey = getGuestKey(tableId, guest);
                     return window.checkedInGuests.has(guestKey);
                 });
@@ -415,29 +438,46 @@
                     targetWrapper.appendChild(badge);
                 }
             });
-        }
+        };
 
-        // 4. 切換報到狀態的寫入操作
+        // 4. 切換報到狀態的寫入操作 (兼顧極速本地反應與雲端備份)
         window.toggleCheckIn = async function(tableId, guestName) {
-            if (!currentUser) return;
             const guestKey = getGuestKey(tableId, guestName);
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', guestKey);
+            
+            // 1) 立即切換本地狀態，給予使用者最流暢無阻的打勾體驗 (零延遲)
+            let isNowCheckedIn = false;
+            if (window.checkedInGuests.has(guestKey)) {
+                window.checkedInGuests.delete(guestKey);
+            } else {
+                window.checkedInGuests.add(guestKey);
+                isNowCheckedIn = true;
+            }
 
-            try {
-                if (window.checkedInGuests.has(guestKey)) {
-                    // 已報到 -> 刪除該文件（取消報到）
-                    await deleteDoc(docRef);
-                } else {
-                    // 未報到 -> 建立文件
-                    await setDoc(docRef, {
-                        tableId: tableId,
-                        guestName: guestName,
-                        updater: currentUser.uid,
-                        updatedAt: serverTimestamp()
-                    });
+            // 立即重繪當下打開的抽屜跟地圖綠點
+            if (activeTableId) {
+                window.renderGuestListUI(activeTableId);
+            }
+            window.updateMapTableStatus();
+
+            // 2) 如果雲端資料庫已就緒，背景靜默同步更新
+            if (db && currentUser) {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', guestKey);
+                try {
+                    if (!isNowCheckedIn) {
+                        // 已報到 -> 刪除該文件（取消報到）
+                        await deleteDoc(docRef);
+                    } else {
+                        // 未報到 -> 建立文件
+                        await setDoc(docRef, {
+                            tableId: tableId,
+                            guestName: guestName,
+                            updater: currentUser.uid,
+                            updatedAt: serverTimestamp()
+                        });
+                    }
+                } catch (err) {
+                    console.error("雲端狀態同步失敗（已保留本地操作結果）:", err);
                 }
-            } catch (err) {
-                console.error("更新報到狀態錯誤:", err);
             }
         };
 
@@ -453,7 +493,7 @@
     </script>
 
     <script>
-        // 完全符合使用者提供的原始名單
+        // 完全符合使用者提供的原始名單 (無缺漏、字元完全正確)
         const seatingData = {
             "主桌": ["蘇郁翔", "蔣瑀", "王淑秋", "吳俞燁", "郁翔爺爺", "郁翔大伯", "郁翔大舅舅", "郁翔二舅舅", "蔣瑀大舅舅", "蔣瑀二舅舅", "蔣瑀大伯（素）", "堂哥（素）"],
             "2": ["郁翔外公", "郁翔外婆", "王筱晴", "王筱晴", "二舅媽", "孝毅姨丈", "阿姨", "甫丞", "甫丞女友"],
@@ -487,6 +527,10 @@
             "30": ["徐慧庭", "王筠惠", "黃筠晴", "王博璇", "陸懷恩", "劉語瞳", "葉宣妤", "詹青頤", "蔡悅聆", "周驪讚"],
             "31": ["陳樂祈", "陳有容", "譚筱蓉", "田苡琳", "潘宇希", "莊昕凌", "陳蓓馨", "李函霏", "詹子怡", "蔡佳欣"]
         };
+
+        // 綁定於全域確保 Module 能存取
+        window.seatingData = seatingData;
+        window.checkedInGuests = window.checkedInGuests || new Set();
 
         let currentHighlightedTableId = null;
 
