@@ -68,8 +68,9 @@
     <header class="bg-[#8c1c1c] text-white shadow-md sticky top-0 z-40 px-4 py-3.5 flex flex-col gap-2.5">
         <div class="max-w-md mx-auto w-full flex items-center justify-between">
             <div class="flex items-center gap-2">
-                <i class="fa-solid fa-hotel text-amber-300 text-lg"></i>
-                <div>
+                <i class="fa-solid fa-hotel text-amber-300 text-lg animate-pulse"></i>
+                <!-- 🎯 點擊此處 5 下即可觸發隱藏設定 -->
+                <div onclick="handleSecretClick()" class="cursor-pointer active:opacity-80 transition select-none">
                     <h1 class="text-base font-black tracking-wider text-amber-100">郁翔＆蔣瑀婚宴</h1>
                     <p class="text-[10px] text-red-200 flex items-center gap-1.5">
                         <span>彭園 BCD 廳 配置</span>
@@ -80,10 +81,6 @@
                     </p>
                 </div>
             </div>
-            <!-- ⚙️ 系統設定按鈕 -->
-            <button onclick="openSettingsModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-amber-100 hover:text-white transition" title="系統設定">
-                <i class="fa-solid fa-gear text-sm"></i>
-            </button>
         </div>
         
         <!-- 搜尋輸入框 -->
@@ -376,7 +373,7 @@
                     <span class="text-slate-500 font-medium">目前的資料連線狀態：</span>
                     <span id="settingsSyncStatus" class="font-bold px-2 py-0.5 rounded-full">檢查中...</span>
                 </div>
-                <p class="text-[10px] text-slate-400 leading-relaxed">提示：此頁面已自動綁定妳的 Realtime Database。任何手持此網頁的裝置皆可即時連動，無需設定！</p>
+                <p class="text-[10px] text-slate-400 leading-relaxed">提示：此頁面已自動綁定妳的 Realtime Database。連按頂部紅色標題 5 下即可再次打開此視窗！</p>
             </div>
 
             <!-- 試算表設定 -->
@@ -556,6 +553,25 @@
                 }
             } catch (err) {
                 console.error("同步至雲端失敗:", err);
+            }
+        };
+
+        // 🎯 隱藏設定呼叫機制：連按 5 下頂部標題解鎖設定
+        let secretClickCount = 0;
+        let secretClickTimer = null;
+        window.handleSecretClick = function() {
+            secretClickCount++;
+            if (secretClickTimer) clearTimeout(secretClickTimer);
+            
+            // 2 秒內沒按完就重設計數器
+            secretClickTimer = setTimeout(() => {
+                secretClickCount = 0;
+            }, 2000);
+
+            if (secretClickCount >= 5) {
+                secretClickCount = 0;
+                clearTimeout(secretClickTimer);
+                openSettingsModal();
             }
         };
 
