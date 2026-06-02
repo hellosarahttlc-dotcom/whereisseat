@@ -75,11 +75,15 @@
                         <span>彭園 BCD 廳 配置</span>
                         <span id="syncIndicator" class="inline-flex items-center gap-1 text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.2 rounded-full">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                            同步準備中
+                            同步中...
                         </span>
                     </p>
                 </div>
             </div>
+            <!-- ⚙️ 系統設定按鈕 -->
+            <button onclick="openSettingsModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-amber-100 hover:text-white transition" title="系統設定">
+                <i class="fa-solid fa-gear text-sm"></i>
+            </button>
         </div>
         
         <!-- 搜尋輸入框 -->
@@ -350,108 +354,174 @@
     <!-- 遮罩背景 -->
     <div id="backdrop" onclick="closeBottomSheet()" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-200"></div>
 
-    <!-- Firebase SDK ES Modules -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- ⚙️ 系統與同步設定彈出視窗 -->
+    <div id="settingsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <!-- 遮罩背景 -->
+        <div onclick="closeSettingsModal()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <!-- 視窗主體 -->
+        <div class="bg-white rounded-[2rem] shadow-2xl max-w-md w-full p-6 relative z-10 border border-slate-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                <h3 class="text-base font-black text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-[#8c1c1c]"></i>
+                    <span>系統與同步設定</span>
+                </h3>
+                <button onclick="closeSettingsModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            
+            <!-- 狀態顯示 -->
+            <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 text-xs space-y-1.5">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">目前的資料連線狀態：</span>
+                    <span id="settingsSyncStatus" class="font-bold px-2 py-0.5 rounded-full">檢查中...</span>
+                </div>
+                <p class="text-[10px] text-slate-400 leading-relaxed">提示：此頁面已自動綁定妳的 Realtime Database。任何手持此網頁的裝置皆可即時連動，無需設定！</p>
+            </div>
 
-        // 從 LocalStorage 恢復紀錄，確保離線或關閉網頁時狀態完美保留
+            <!-- 試算表設定 -->
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold text-slate-700">Google 試算表 ID</label>
+                <input type="text" id="settingSheetId" placeholder="輸入 11nPoCdi... 等試算表 ID" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
+            </div>
+
+            <!-- Firebase 雲端網址設定 (現在只要貼一行 URL，預設已填好妳的資料庫) -->
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold text-slate-700 flex justify-between items-center">
+                    <span>自訂 Firebase Realtime DB URL</span>
+                </label>
+                <input type="text" id="settingFirebaseUrl" placeholder="https://[你的專案ID].firebasedatabase.app/" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-400">
+            </div>
+
+            <!-- 按鈕區 -->
+            <div class="flex gap-2 pt-2">
+                <button onclick="resetSettings()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold py-2.5 rounded-xl transition">
+                    恢復預設
+                </button>
+                <button onclick="saveSettings()" class="flex-1 bg-[#8c1c1c] hover:bg-[#721616] text-white text-xs font-bold py-2.5 rounded-xl transition shadow-md">
+                    儲存並重啟
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚡️ 免 SDK 即時自動連動邏輯 -->
+    <script>
+        // 從 LocalStorage 恢復打勾紀錄
         const localCache = localStorage.getItem('checkedInGuests_wedding');
         window.checkedInGuests = new Set(localCache ? JSON.parse(localCache) : []);
+        window.activeTableId = null;
 
-        let app, auth, db, appId;
-        let authUser = null;
-        let dbReady = false;
-
-        // 1. Firebase 初始化
-        try {
-            const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : null;
-            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-            if (firebaseConfig && firebaseConfig.apiKey) {
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                // Rule 3: 優先進行身份驗證，等待完成後再建立資料庫監聽
-                initAuthAndSync();
-            } else {
-                setupLocalOnlyMode();
-            }
-        } catch (err) {
-            console.error("Firebase 初始化異常:", err);
-            setupLocalOnlyMode();
+        // 🎯 自動指向妳剛剛申請的「新加坡 Realtime Database」！
+        const DEFAULT_DB_URL = "https://weddingseat-41c0b-default-rtdb.asia-southeast1.firebasedatabase.app/";
+        
+        let activeDbUrl = localStorage.getItem('custom_db_url') || DEFAULT_DB_URL;
+        if (!activeDbUrl.endsWith('/')) {
+            activeDbUrl += '/';
         }
 
-        async function initAuthAndSync() {
-            try {
-                let userCredential;
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    userCredential = await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    userCredential = await signInAnonymously(auth);
-                }
+        let eventSource = null;
 
-                const user = userCredential.user;
-                if (user) {
-                    authUser = user;
-                    dbReady = true;
-                    document.getElementById('syncIndicator').innerHTML = `
+        // 1. 本地與雲端雙向秒級同步
+        function initRealtimeSync() {
+            const syncIndicator = document.getElementById('syncIndicator');
+            
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            // 指向 checkins 節點的 json API
+            const sseUrl = `${activeDbUrl}checkins.json`;
+            
+            try {
+                eventSource = new EventSource(sseUrl);
+
+                // 當雲端資料有變更，秒級觸發
+                eventSource.addEventListener('put', (event) => {
+                    const response = JSON.parse(event.data);
+                    const path = response.path;
+                    const data = response.data;
+
+                    if (path === "/") {
+                        // 初始連線：同步所有雲端打勾紀錄
+                        window.checkedInGuests.clear();
+                        if (data) {
+                            Object.keys(data).forEach(key => {
+                                window.checkedInGuests.add(key);
+                            });
+                        }
+                    } else {
+                        // 單一更新：路徑為 "/[賓客Key]"
+                        const guestKey = path.substring(1);
+                        if (data === null) {
+                            window.checkedInGuests.delete(guestKey);
+                        } else {
+                            window.checkedInGuests.add(guestKey);
+                        }
+                    }
+
+                    // 備份到本地 LocalStorage 防關網頁，並重新繪製 UI
+                    localStorage.setItem('checkedInGuests_wedding', JSON.stringify([...window.checkedInGuests]));
+                    if (window.activeTableId) {
+                        window.renderGuestListUI(window.activeTableId);
+                    }
+                    window.updateMapTableStatus();
+                    window.updateAttendanceDashboard();
+
+                    syncIndicator.innerHTML = `
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                         雲端已同步
                     `;
-                    // 驗證成功後，開啟即時同步
-                    startListening(user);
-                }
+                });
+
+                // 當雲端有局部 Patch 時觸發
+                eventSource.addEventListener('patch', (event) => {
+                    const response = JSON.parse(event.data);
+                    const path = response.path;
+                    const data = response.data;
+
+                    if (path === "/") {
+                        if (data) {
+                            Object.keys(data).forEach(key => {
+                                if (data[key] === null) {
+                                    window.checkedInGuests.delete(key);
+                                } else {
+                                    window.checkedInGuests.add(key);
+                                }
+                            });
+                        }
+                    }
+
+                    localStorage.setItem('checkedInGuests_wedding', JSON.stringify([...window.checkedInGuests]));
+                    if (window.activeTableId) {
+                        window.renderGuestListUI(window.activeTableId);
+                    }
+                    window.updateMapTableStatus();
+                    window.updateAttendanceDashboard();
+                });
+
+                eventSource.onerror = () => {
+                    syncIndicator.innerHTML = `
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        線路重新連線中
+                    `;
+                };
+
             } catch (err) {
-                console.error("Firebase 認證失敗，降級為本機快取:", err);
-                setupLocalOnlyMode();
+                console.error("即時連線建立失敗，切換為本地模式:", err);
+                syncIndicator.innerHTML = `
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    本地保存模式
+                `;
             }
         }
 
-        function setupLocalOnlyMode() {
-            document.getElementById('syncIndicator').innerHTML = `
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                本地保存模式
-            `;
-            if (typeof window.updateMapTableStatus === 'function') window.updateMapTableStatus();
-            if (typeof window.updateAttendanceDashboard === 'function') window.updateAttendanceDashboard();
-        }
-
-        // 2. 監聽雲端報到狀態（即時雙向共享）
-        function startListening(user) {
-            if (!user || !db) return; // Guard Rule 3
-
-            const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
-            
-            // 監聽雲端打勾紀錄並寫回本機
-            onSnapshot(checkinsRef, (snapshot) => {
-                window.checkedInGuests.clear();
-                snapshot.forEach(doc => {
-                    window.checkedInGuests.add(doc.id);
-                });
-
-                // 同步備份至 LocalStorage，防範關閉網頁
-                localStorage.setItem('checkedInGuests_wedding', JSON.stringify([...window.checkedInGuests]));
-
-                // 即時重新繪製當前畫面與儀表板
-                if (window.activeTableId) {
-                    window.renderGuestListUI(window.activeTableId);
-                }
-                window.updateMapTableStatus();
-                window.updateAttendanceDashboard();
-            }, (error) => {
-                console.error("即時資料監聽失敗:", error);
-            });
-        }
-
-        // 3. 供外部調用的雲端/本地切換報到狀態函數
+        // 2. 本地切換打勾狀態，並立即發送 REST API 覆蓋雲端
         window.toggleCheckIn = async function(tableId, guestName) {
-            const guestKey = getGuestKey(tableId, guestName);
+            const guestKey = getGuestKeyLocal(tableId, guestName);
             let isNowCheckedIn = false;
 
-            // A. 本地狀態直接切換 (極速流暢感，不卡頓)
+            // A. 本地極速切換 (不等待網速，瞬間反應)
             if (window.checkedInGuests.has(guestKey)) {
                 window.checkedInGuests.delete(guestKey);
             } else {
@@ -459,40 +529,40 @@
                 isNowCheckedIn = true;
             }
 
-            // B. 即時儲存至本地快取
             localStorage.setItem('checkedInGuests_wedding', JSON.stringify([...window.checkedInGuests]));
 
-            // C. 立即重繪本地畫面
+            // B. 立即繪製畫面
             if (window.activeTableId) {
                 window.renderGuestListUI(window.activeTableId);
             }
             window.updateMapTableStatus();
             window.updateAttendanceDashboard();
 
-            // D. 異步傳送至 Firebase Firestore 雲端資料庫
-            if (dbReady && authUser) {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', guestKey);
-                try {
-                    if (!isNowCheckedIn) {
-                        await deleteDoc(docRef);
-                    } else {
-                        await setDoc(docRef, {
+            // C. 背地裡異步打 API 更新 Realtime DB (完全不需要登入驗證、直接操作)
+            const endpoint = `${activeDbUrl}checkins/${guestKey}.json`;
+            try {
+                if (!isNowCheckedIn) {
+                    await fetch(endpoint, { method: 'DELETE' });
+                } else {
+                    await fetch(endpoint, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
                             tableId: tableId,
                             guestName: guestName,
-                            updater: authUser.uid,
-                            updatedAt: serverTimestamp()
-                        });
-                    }
-                } catch (err) {
-                    console.error("雲端更新失敗 (已保存於本地):", err);
+                            updatedAt: Date.now()
+                        })
+                    });
                 }
+            } catch (err) {
+                console.error("同步至雲端失敗:", err);
             }
         };
 
-        // 輔助工具：生成唯一索引鍵值
-        function getGuestKey(tableId, guestName) {
-            return `${tableId}_${guestName}`.replace(/[\s\(\)（）\+]/g, '_');
-        }
+        // 3. 初始執行連動
+        window.addEventListener('DOMContentLoaded', () => {
+            initRealtimeSync();
+        });
     </script>
 
     <!-- 賓客名單資料庫與操作邏輯 -->
@@ -522,9 +592,9 @@
             "21": ["梁孟霞", "丁賢二", "林明志", "鍾佳純", "陳俊吉", "趙旭昇", "蔡佩真", "蔡淑宜", "羅一凡", "蔣祖秋"],
             "22": ["陳佳樂", "江成皓", "陳碧珠", "王加恩", "黃姿驊", "劉瀚文", "劉璟萱", "林聖哲", "陳存偉", "莊于萱"],
             "23": ["王品恩", "沈書婷", "林榮祥", "陳奕晏", "陳佳美", "孫仙平", "張白穗", "孫伯勻", "韓松霖", "江禹蓁"],
-            "24": ["李欣芳", "鄭佩儒", "馬堉慈", "徐瑋慧", "侯淑鳳（素）", "蔡惠鈴", "陳品蓉", "開連", "陳桂枝", "高連春"],
+            "24": ["李欣芳", "鄭佩儒", "馬意", "徐瑋慧", "侯淑鳳（素）", "蔡惠鈴", "陳品蓉", "開連", "陳桂枝", "高連春"],
             "25": ["楊媁婷", "吳琪琦", "陳宇聖", "黃冠霖", "林允中", "丁振新", "陳熙"],
-            "26": ["林鼎言", "陳佳穎", "陳得安", "陳宇凱", "莊亦真", "羅以樂", "羅以欣", "張蓓怡", "黃馨瑩", "林肯平"],
+            "26": ["林鼎言", "陳佳穎", "陳得安", "陳宇凱", "莊亦真", "羅以樂", "羅以欣", "張蓓怡", "黃馨營", "林肯平"],
             "27": ["鄭睦宣", "黃沐恩", "周郁庭", "周書平", "陳婉瑜", "林友翔", "劉加恩", "孫韻嵐", "陳敬庭", "徐子昕"],
             "28": ["陳麒元", "涂惠盈", "陳慕祈", "朱萬方", "閻貴亨", "閻善敏", "閻善真", "閻善恩", "廖峻偉", "李言光"],
             "29": ["黃愛薇", "康晉嘉", "方艾婷", "劉振興", "胡晏菽", "陳守愚", "嚴吉", "陳義藍", "陳義聆"],
@@ -651,18 +721,15 @@
         window.updateMapTableStatus = function() {
             const currentSeatingData = window.seatingData || seatingData;
             Object.keys(currentSeatingData).forEach(tableId => {
-                // 將表格ID如 "2" 轉為視覺對應的 DOM 元素
                 const domTableId = tableId === '主桌' ? '主桌' : tableId;
                 const targetWrapper = document.getElementById(`table-${domTableId}`);
                 if (!targetWrapper) return;
 
-                // 檢查是否有賓客已報到
                 const hasAnyCheckin = currentSeatingData[tableId].some(guest => {
                     const guestKey = getGuestKeyLocal(tableId, guest);
                     return window.checkedInGuests && window.checkedInGuests.has(guestKey);
                 });
 
-                // 清除舊的小綠點
                 const existingBadge = targetWrapper.querySelector('.checkin-badge');
                 if (existingBadge) {
                     existingBadge.remove();
@@ -700,11 +767,9 @@
                 }
             });
 
-            // 計算百分比
             const guestPercent = totalGuests > 0 ? Math.round((arrivedGuests / totalGuests) * 100) : 0;
             const tablePercent = totalTablesCount > 0 ? Math.round((occupiedTablesCount / totalTablesCount) * 100) : 0;
 
-            // 更新數據標籤
             document.getElementById('statsArrivedCount').innerText = `${arrivedGuests} / ${totalGuests} 人`;
             document.getElementById('statsArrivedPercent').innerText = `${guestPercent}%`;
             document.getElementById('statsGuestProgressBar').style.width = `${guestPercent}%`;
@@ -713,7 +778,6 @@
             document.getElementById('statsTablePercent').innerText = `${tablePercent}%`;
             document.getElementById('statsTableProgressBar').style.width = `${tablePercent}%`;
 
-            // 開飯指標提示判定 (當已到場比例 >= 70%)
             const feastBanner = document.getElementById('feastIndicatorBanner');
             if (guestPercent >= 70) {
                 feastBanner.className = "mt-4 p-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md border border-amber-400/30 animate-pulse flex flex-col justify-between items-center gap-2 text-center";
@@ -764,7 +828,6 @@
             const trimmed = query.toLowerCase().trim();
             const matches = [];
 
-            // 搜尋全部名單
             Object.keys(currentData).forEach(tableId => {
                 currentData[tableId].forEach(guest => {
                     if (guest.toLowerCase().includes(trimmed)) {
@@ -776,7 +839,6 @@
                 });
             });
 
-            // 顯示搜尋結果
             if (matches.length > 0) {
                 resultsDiv.innerHTML = '';
                 matches.forEach(match => {
@@ -814,7 +876,6 @@
             }
         }
 
-        // 清除搜尋
         function clearSearch() {
             document.getElementById('searchInput').value = '';
             document.getElementById('searchResults').classList.add('hidden');
@@ -832,7 +893,6 @@
             }
         }
 
-        // 高亮定位與滾動
         function highlightAndScrollToTable(tableId) {
             resetCurrentHighlight();
             const targetWrapper = document.getElementById(`table-${tableId}`);
@@ -840,21 +900,59 @@
                 const innerCircle = targetWrapper.firstElementChild;
                 innerCircle.classList.add('animate-highlight');
                 currentHighlightedTableId = tableId;
-
                 targetWrapper.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
             }
         }
 
+        // ⚙️ 系統設定面板控制
+        window.openSettingsModal = function() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+            document.getElementById('settingSheetId').value = localStorage.getItem('custom_sheet_id') || '11nPoCdiFalNKW0WjUh07aO8wjc52w-Xg00FSYNbaiCU';
+            document.getElementById('settingFirebaseUrl').value = localStorage.getItem('custom_db_url') || DEFAULT_DB_URL;
+
+            const statusLabel = document.getElementById('settingsSyncStatus');
+            statusLabel.className = "text-emerald-700 bg-emerald-50 font-bold px-2 py-0.5 rounded-full text-[11px] border border-emerald-100";
+            statusLabel.innerText = "雲端已連動";
+        };
+
+        window.closeSettingsModal = function() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        };
+
+        window.saveSettings = function() {
+            const sheetIdVal = document.getElementById('settingSheetId').value.trim();
+            const urlVal = document.getElementById('settingFirebaseUrl').value.trim();
+
+            if (sheetIdVal) {
+                localStorage.setItem('custom_sheet_id', sheetIdVal);
+            } else {
+                localStorage.removeItem('custom_sheet_id');
+            }
+
+            if (urlVal) {
+                localStorage.setItem('custom_db_url', urlVal);
+            } else {
+                localStorage.removeItem('custom_db_url');
+            }
+
+            window.location.reload();
+        };
+
+        window.resetSettings = function() {
+            localStorage.removeItem('custom_sheet_id');
+            localStorage.removeItem('custom_db_url');
+            window.location.reload();
+        };
+
         // Google 試算表串接與正規化覆蓋處理
         async function fetchGoogleSheetData() {
-            const sheetId = '11nPoCdiFalNKW0WjUh07aO8wjc52w-Xg00FSYNbaiCU';
-            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+            const savedSheetId = localStorage.getItem('custom_sheet_id') || '11nPoCdiFalNKW0WjUh07aO8wjc52w-Xg00FSYNbaiCU';
+            const url = `https://docs.google.com/spreadsheets/d/${savedSheetId}/export?format=csv`;
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('雲端載入失敗');
                 const csvText = await response.text();
                 
-                // 解析 CSV 資料列
                 const rows = [];
                 let currentRow = [];
                 let currentCell = '';
@@ -890,7 +988,6 @@
 
                 if (rows.length < 2) return;
 
-                // 智慧感應：智慧掃描前 10 列，自動鎖定桌次與人名欄位
                 let tableColIdx = 1;
                 let nameColIdx = 0;
                 let col0Score = 0;
@@ -907,16 +1004,12 @@
                 if (col0Score > col1Score) {
                     tableColIdx = 0;
                     nameColIdx = 1;
-                    console.log("【智慧感應】：已偵測到「桌次在前、姓名在後」格式");
                 } else {
                     tableColIdx = 1;
                     nameColIdx = 0;
-                    console.log("【智慧感應】：已偵測到「姓名在前、桌次在後」格式");
                 }
 
                 const newSeatingData = {};
-                
-                // 檢查第一列是否是說明欄/表頭 (若第一列姓名欄含有 "名" 或 "桌" 則排除)
                 const firstRowTableVal = normalizeKey(rows[0][tableColIdx]);
                 const isHeader = (rows[0][nameColIdx] || '').includes('名') || (rows[0][tableColIdx] || '').includes('桌') || (firstRowTableVal === '');
                 const startIdx = isHeader ? 1 : 0;
@@ -934,13 +1027,9 @@
                     newSeatingData[tableIdClean].push(guestName);
                 }
 
-                // 成功寫入記憶體並備份在 LocalStorage
                 if (Object.keys(newSeatingData).length > 0) {
                     window.seatingData = newSeatingData;
                     localStorage.setItem('cached_seating_data', JSON.stringify(newSeatingData));
-                    console.log("【同步成功】：已完美匹配雲端名單！", newSeatingData);
-                    
-                    // 重新刷新地圖與儀表板顯示
                     window.updateMapTableStatus();
                     window.updateAttendanceDashboard();
                 }
@@ -955,7 +1044,6 @@
             }
         }
 
-        // 初始化
         window.addEventListener('DOMContentLoaded', async () => {
             await fetchGoogleSheetData();
             window.updateMapTableStatus();
