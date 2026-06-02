@@ -7,7 +7,7 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts Inter & Noto Sans TC -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;600;800&family=Noto+Sans+TC:wght=400;700;900&display=swap" rel="stylesheet">
     <!-- FontAwesome 圖示 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -25,7 +25,7 @@
     <style>
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
-            background-color: #f3f4f6; /* 淺灰色背景，突顯中央的高級白色看板 */
+            background-color: #f3f4f6; /* 淺灰色背景 */
             -webkit-tap-highlight-color: transparent;
         }
         /* 隱藏滾動條 */
@@ -63,7 +63,7 @@
         }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col overflow-x-hidden select-none">
+<body class="text-slate-800 min-h-screen flex flex-col overflow-x-hidden select-none pb-8">
 
     <header class="bg-[#8c1c1c] text-white shadow-md sticky top-0 z-40 px-4 py-3.5 flex flex-col gap-2.5">
         <div class="max-w-md mx-auto w-full flex items-center justify-between">
@@ -75,7 +75,7 @@
                         <span>彭園 BCD 廳 配置</span>
                         <span id="syncIndicator" class="inline-flex items-center gap-1 text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.2 rounded-full">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                            雲端同步中
+                            同步準備中
                         </span>
                     </p>
                 </div>
@@ -88,7 +88,7 @@
                 <span class="absolute left-3.5 text-slate-400">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </span>
-                <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="輸入賓客姓名尋找桌次（如：王筱晴、素）..." class="w-full bg-white text-slate-900 border border-transparent rounded-full pl-10 pr-9 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 transition placeholder-slate-400 font-medium">
+                <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="輸入賓客姓名尋找桌次..." class="w-full bg-white text-slate-900 border border-transparent rounded-full pl-10 pr-9 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 transition placeholder-slate-400 font-medium">
                 <button id="clearSearchBtn" onclick="clearSearch()" class="absolute right-3 text-slate-400 hover:text-slate-600 hidden">
                     <i class="fa-solid fa-circle-xmark"></i>
                 </button>
@@ -101,17 +101,16 @@
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto py-4 px-3 flex flex-col items-center">
+    <main class="flex-1 overflow-y-auto py-4 px-3 flex flex-col items-center w-full max-w-4xl mx-auto">
         
-        <!-- 橫向滑動操作提示 (在小螢幕時會顯示) -->
+        <!-- 橫向滑動操作提示 -->
         <div class="w-full max-w-sm mb-2 text-center text-[11px] text-slate-500 bg-slate-200/60 rounded-full py-1 border border-slate-300/40 flex items-center justify-center gap-1">
             <i class="fa-solid fa-arrows-left-right animate-pulse text-slate-400"></i>
             <span>請左右拖曳 / 滑動檢視一模一樣的完整桌次配置圖</span>
         </div>
 
-        <!-- 橫向滾動框，鎖定最小寬度確保桌位不變形、不亂跑 -->
-        <div class="w-full overflow-x-auto no-scrollbar py-2" id="mapScrollContainer">
-            <!-- 寬度鎖定在 720px 以完全還原圖中三區佈局比例 -->
+        <!-- 橫向滾動框 -->
+        <div class="w-full overflow-x-auto no-scrollbar py-2 mb-4" id="mapScrollContainer">
             <div class="min-w-[700px] max-w-[750px] mx-auto bg-white rounded-[2rem] border-[4px] border-slate-800 p-6 relative shadow-lg">
                 
                 <!-- 頂部 LED 標示 -->
@@ -134,7 +133,7 @@
                 <div id="seatingGrid" class="grid grid-cols-11 gap-x-1 gap-y-7 relative">
                     
                     <!-- 1. 第一排 (Row 2): 
-                         Left: [21, 22, 23] | Walkway [Empty] | Center [主桌] | Walkway [Empty] | Right [10, 11, 12] -->
+                         Left: [21, 22, 23] | Walkway | Center [主桌] | Walkway | Right [10, 11, 12] -->
                     <div onclick="openBottomSheet('21')" id="table-21" class="col-start-1 flex justify-center relative">
                         <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">21</div>
                     </div>
@@ -278,11 +277,51 @@
 
             </div>
         </div>
+
+        <!-- 📊 現場宴客出席狀況儀表板 -->
+        <div class="w-full max-w-sm bg-white rounded-3xl border border-slate-200 p-5 shadow-sm mt-2">
+            <h2 class="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
+                <i class="fa-solid fa-chart-pie text-[#8c1c1c]"></i>
+                <span>現場賓客入席進度</span>
+            </h2>
+            
+            <div class="space-y-4">
+                <!-- 賓客出席比例 -->
+                <div>
+                    <div class="flex justify-between items-center text-xs mb-1.5">
+                        <span class="text-slate-500 font-medium">已到場賓客比例</span>
+                        <span id="statsArrivedCount" class="font-bold text-slate-800">0 / 0 人</span>
+                        <span id="statsArrivedPercent" class="font-black text-[#8c1c1c] bg-red-50 px-2 py-0.5 rounded-full text-[10px]">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div id="statsGuestProgressBar" class="bg-[#8c1c1c] h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- 已入席桌數比例 -->
+                <div>
+                    <div class="flex justify-between items-center text-xs mb-1.5">
+                        <span class="text-slate-500 font-medium">已入座桌數 (只要該桌有人簽到即算)</span>
+                        <span id="statsOccupiedTables" class="font-bold text-slate-800">0 / 0 桌</span>
+                        <span id="statsTablePercent" class="font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px]">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div id="statsTableProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 開飯推薦指標提示條 (達 70% 出席率即觸發金色光輝警示) -->
+            <div id="feastIndicatorBanner" class="transition-all duration-300">
+                <!-- 動態注入開飯推薦狀態 -->
+            </div>
+        </div>
         
         <!-- 備註說明 -->
-        <p class="text-[10px] text-slate-500 mt-4 text-center">※ 此為現場擺設示意圖，實際依現場擺放為主</p>
+        <p class="text-[10px] text-slate-400 mt-4 text-center">※ 此為現場擺設示意圖，實際依現場擺放為主</p>
     </main>
 
+    <!-- 賓客名單底層滑出面板 -->
     <div id="bottomSheet" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-300 rounded-t-[1.8rem] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] z-50 bottom-sheet max-h-[80vh] flex flex-col">
         <!-- 面板把手與頂部 -->
         <div class="w-full flex justify-between items-center px-6 py-4 border-b border-slate-100">
@@ -302,14 +341,13 @@
 
         <!-- 名單內容滾動區域 -->
         <div class="flex-1 overflow-y-auto px-6 py-4 bg-slate-50">
-            <!-- 清晰爽朗的卡片型排列 -->
             <div id="drawerGuestList" class="grid grid-cols-2 gap-2 pb-6">
                 <!-- 賓客資料將透過 Javascript 動態注入 -->
             </div>
         </div>
     </div>
 
-    <!-- 遮罩背景 (點擊任何空白處可關閉底盤) -->
+    <!-- 遮罩背景 -->
     <div id="backdrop" onclick="closeBottomSheet()" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-200"></div>
 
     <!-- Firebase SDK ES Modules -->
@@ -318,13 +356,15 @@
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 即時保存所有已報到賓客的 unique key 集合 (防禦載入：先與外部全域變數做合併)
-        window.checkedInGuests = window.checkedInGuests || new Set();
-        let app, auth, db, appId;
-        let currentUser = null;
-        let activeTableId = null; // 當前正被打開的名單桌號
+        // 從 LocalStorage 恢復紀錄，確保離線或關閉網頁時狀態完美保留
+        const localCache = localStorage.getItem('checkedInGuests_wedding');
+        window.checkedInGuests = new Set(localCache ? JSON.parse(localCache) : []);
 
-        // 1. 安全防禦初始化機制（即使環境變數缺失，也能完美在本地端測試運行）
+        let app, auth, db, appId;
+        let authUser = null;
+        let dbReady = false;
+
+        // 1. Firebase 初始化
         try {
             const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : null;
             appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -333,119 +373,85 @@
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
+
+                // Rule 3: 優先進行身份驗證，等待完成後再建立資料庫監聽
+                initAuthAndSync();
             } else {
-                console.warn("Firebase 未配置或缺少 apiKey，將啟用本地模擬預覽模式。");
-                document.getElementById('syncIndicator').innerHTML = `
-                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    本地預覽模式
-                `;
+                setupLocalOnlyMode();
             }
         } catch (err) {
-            console.error("Firebase 初始化遭遇異常:", err);
-            document.getElementById('syncIndicator').innerHTML = `
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                預覽模式 (未連線)
-            `;
+            console.error("Firebase 初始化異常:", err);
+            setupLocalOnlyMode();
         }
 
-        // 2. 嚴格執行 RULE 3: 優先認證，成功後再執行 Firestore 查詢
-        if (auth) {
-            const initAuth = async () => {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (err) {
-                    console.error("Firebase 認證失敗:", err);
-                    document.getElementById('syncIndicator').innerHTML = `
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                        認證失敗 (使用本地)
-                    `;
+        async function initAuthAndSync() {
+            try {
+                let userCredential;
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    userCredential = await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    userCredential = await signInAnonymously(auth);
                 }
-            };
 
-            initAuth();
-
-            onAuthStateChanged(auth, (user) => {
-                currentUser = user;
+                const user = userCredential.user;
                 if (user) {
-                    // 連線燈提示
+                    authUser = user;
+                    dbReady = true;
                     document.getElementById('syncIndicator').innerHTML = `
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        已即時連線
+                        雲端已同步
                     `;
-                    // 開始即時監聽資料庫
-                    startListening();
-                } else {
-                    document.getElementById('syncIndicator').innerHTML = `
-                        <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                        未連線
-                    `;
+                    // 驗證成功後，開啟即時同步
+                    startListening(user);
                 }
-            });
+            } catch (err) {
+                console.error("Firebase 認證失敗，降級為本機快取:", err);
+                setupLocalOnlyMode();
+            }
         }
 
-        // 3. 監聽報到狀態（即時同步）- 遵守 RULE 1 & 2
-        function startListening() {
-            if (!currentUser || !db) return;
+        function setupLocalOnlyMode() {
+            document.getElementById('syncIndicator').innerHTML = `
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                本地保存模式
+            `;
+            if (typeof window.updateMapTableStatus === 'function') window.updateMapTableStatus();
+            if (typeof window.updateAttendanceDashboard === 'function') window.updateAttendanceDashboard();
+        }
 
-            // 嚴格遵守路徑規則 1：公用協作資料放於 public/data 下
+        // 2. 監聽雲端報到狀態（即時雙向共享）
+        function startListening(user) {
+            if (!user || !db) return; // Guard Rule 3
+
             const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
             
+            // 監聽雲端打勾紀錄並寫回本機
             onSnapshot(checkinsRef, (snapshot) => {
                 window.checkedInGuests.clear();
                 snapshot.forEach(doc => {
                     window.checkedInGuests.add(doc.id);
                 });
 
-                // 當資料有更新時，即時重繪當前開啟的名單抽屜，達到多招待畫面秒級同步
-                if (activeTableId) {
-                    window.renderGuestListUI(activeTableId);
-                }
+                // 同步備份至 LocalStorage，防範關閉網頁
+                localStorage.setItem('checkedInGuests_wedding', JSON.stringify([...window.checkedInGuests]));
 
-                // 更新主地圖桌圈的「小綠點」狀態，讓招待一目了然哪桌有人報到
+                // 即時重新繪製當前畫面與儀表板
+                if (window.activeTableId) {
+                    window.renderGuestListUI(window.activeTableId);
+                }
                 window.updateMapTableStatus();
+                window.updateAttendanceDashboard();
             }, (error) => {
-                console.error("即時資料庫監聽異常:", error);
+                console.error("即時資料監聽失敗:", error);
             });
         }
 
-        // 即時更新地圖上的「小綠點」標示 (掛載到全域確保安全存取)
-        window.updateMapTableStatus = function() {
-            const currentSeatingData = window.seatingData || seatingData;
-            Object.keys(currentSeatingData).forEach(tableId => {
-                const targetWrapper = document.getElementById(`table-${tableId}`);
-                if (!targetWrapper) return;
-
-                // 檢查此桌是否有任何一位賓客已報到
-                const hasAnyCheckin = currentSeatingData[tableId].some(guest => {
-                    const guestKey = getGuestKey(tableId, guest);
-                    return window.checkedInGuests.has(guestKey);
-                });
-
-                // 移除現有的綠點（如果有的話）
-                const existingBadge = targetWrapper.querySelector('.checkin-badge');
-                if (existingBadge) {
-                    existingBadge.remove();
-                }
-
-                if (hasAnyCheckin) {
-                    // 加上精緻小巧的綠點，不破壞原本乾淨整齊的佈局
-                    const badge = document.createElement('div');
-                    badge.className = "checkin-badge w-3 h-3 bg-emerald-500 rounded-full absolute -top-0.5 -right-0.5 border-2 border-white shadow-sm z-20 pointer-events-none animate-bounce";
-                    targetWrapper.appendChild(badge);
-                }
-            });
-        };
-
-        // 4. 切換報到狀態的寫入操作 (兼顧極速本地反應與雲端備份)
+        // 3. 供外部調用的雲端/本地切換報到狀態函數
         window.toggleCheckIn = async function(tableId, guestName) {
             const guestKey = getGuestKey(tableId, guestName);
-            
-            // 1) 立即切換本地狀態，給予使用者最流暢無阻的打勾體驗 (零延遲)
             let isNowCheckedIn = false;
+
+            // A. 本地狀態直接切換 (極速流暢感，不卡頓)
             if (window.checkedInGuests.has(guestKey)) {
                 window.checkedInGuests.delete(guestKey);
             } else {
@@ -453,74 +459,72 @@
                 isNowCheckedIn = true;
             }
 
-            // 立即重繪當下打開的抽屜跟地圖綠點
-            if (activeTableId) {
-                window.renderGuestListUI(activeTableId);
+            // B. 即時儲存至本地快取
+            localStorage.setItem('checkedInGuests_wedding', JSON.stringify([...window.checkedInGuests]));
+
+            // C. 立即重繪本地畫面
+            if (window.activeTableId) {
+                window.renderGuestListUI(window.activeTableId);
             }
             window.updateMapTableStatus();
+            window.updateAttendanceDashboard();
 
-            // 2) 如果雲端資料庫已就緒，背景靜默同步更新
-            if (db && currentUser) {
+            // D. 異步傳送至 Firebase Firestore 雲端資料庫
+            if (dbReady && authUser) {
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'checkins', guestKey);
                 try {
                     if (!isNowCheckedIn) {
-                        // 已報到 -> 刪除該文件（取消報到）
                         await deleteDoc(docRef);
                     } else {
-                        // 未報到 -> 建立文件
                         await setDoc(docRef, {
                             tableId: tableId,
                             guestName: guestName,
-                            updater: currentUser.uid,
+                            updater: authUser.uid,
                             updatedAt: serverTimestamp()
                         });
                     }
                 } catch (err) {
-                    console.error("雲端狀態同步失敗（已保留本地操作結果）:", err);
+                    console.error("雲端更新失敗 (已保存於本地):", err);
                 }
             }
         };
 
-        // 輔助工具：生成安全且一致的鍵值
+        // 輔助工具：生成唯一索引鍵值
         function getGuestKey(tableId, guestName) {
             return `${tableId}_${guestName}`.replace(/[\s\(\)（）\+]/g, '_');
         }
-
-        // 綁定 activeTableId，方便在 Snapshot 中直接重繪
-        window.setActiveTableId = function(tableId) {
-            activeTableId = tableId;
-        };
     </script>
 
+    <!-- 賓客名單資料庫與操作邏輯 -->
     <script>
-        // 完全符合使用者提供的原始名單 (無缺漏、字元完全正確)
+        // 完全符合雲端 Excel 最新精確名單 (本地備援快取)
         const seatingData = {
-            "主桌": ["蘇郁翔", "蔣瑀", "王淑秋", "吳俞燁", "郁翔爺爺", "郁翔大伯", "郁翔大舅舅", "郁翔二舅舅", "蔣瑀大舅舅", "蔣瑀二舅舅", "蔣瑀大伯（素）", "堂哥（素）"],
-            "2": ["郁翔外公", "郁翔外婆", "王筱晴", "王筱晴", "二舅媽", "孝毅姨丈", "阿姨", "甫丞", "甫丞女友"],
-            "3": ["大舅媽", "二舅媽", "劉建祥", "劉建祥太太", "小舅舅", "小舅媽", "吳宗諦", "吳宗諦", "葉永盛", "蘇育俞"],
-            "4": ["言兆芬", "王之瑋", "廖三利", "呂元虹", "嫚玲姐", "Peggy", "Rose", "曹琬琦", "曹琬琦", "曹琬琦"],
-            "5": ["吳品萱", "秉信", "葉守真", "葉守慈", "葉守敬", "王英婷", "玉華牧師", "黃安國", "樊子僑", "祖欣"],
+            "主桌": ["蘇郁翔", "蔣瑀", "男方媽媽", "女方媽媽", "郁翔爺爺", "郁翔大伯", "王文章", "王文杰", "蔣瑀大舅舅", "蔣瑀二舅舅", "蔣瑀大伯（素）", "堂哥（素）"],
+            "2": ["郁翔外公", "郁翔外婆", "王筱晴", "王筱晴", "張麗梅", "張孝毅", "張家銘", "王冠淑", "王甫丞", "王甫丞女友"],
+            "3": ["鄭玉琴", "王曼敏", "劉建祥", "劉建祥", "小舅舅", "小舅媽", "吳宗諦", "吳宗諦", "葉永盛", "蘇育俞"],
+            "4": ["言兆芬", "王之瑋", "廖三利", "呂元虹", "嫚玲姐", "Peggy", "Rose鄒開蓮", "曹琬琦"],
+            "5": ["吳品萱", "秉信", "葉守真", "葉守慈", "葉守敬", "王英婷", "玉華牧師", "黃安國", "樊子僑"],
             "6": ["周哲緯", "李軒萍", "陳炯翰", "莊寶琳", "詹文仁", "李念蒨", "詹小寶", "翁林甫", "賴品妤"],
-            "7": ["吳厚儒", "張峻維", "張峻維", "李貞慧", "張雅評", "陳仕匯", "張彥瑋", "蔡心博", "張惠之"],
+            "7": ["吳厚儒", "張峻維", "李貞慧", "張雅評", "陳仕匯", "張彥瑋", "蔡心博", "張惠之"],
             "8": ["吳曉君", "張雅菁", "陳小包", "黃品佳", "施雅林", "吳佳勳", "郭品君", "許乃文", "春曉", "陳愛婷"],
             "9": ["楊宗翰", "林瑞哲", "林瑞哲", "劉士丕", "劉士丕", "林廷諭", "張家綱", "王智勝", "王智勝女友", "蘇渝玲"],
-            "10": ["翁毓澤", "徐華梅", "黃世華", "范貴華", "陳宇祥", "連植誠", "吳俊霖", "王美幸", "王美靜"],
-            "11": ["謝慧美", "游家昂", "游家昂", "游家昂", "劉秉璋", "邱鋕銘", "李健良", "謝宜妙", "賴慶玲"],
-            "12": ["詹文慶", "林之丘", "古曜瑋", "賴禹滔", "林怡伸", "張仕達", "沈晉仕", "沈晉仕"],
-            "13": ["正翔哥", "自然哥", "路得姐", "天財哥", "寧謙", "徐大皓", "郭家蓉", "藍義信", "藍爸", "藍媽"],
-            "14": ["謝慶雅", "炫凱", "謝振泉", "麗雲", "謝慶瑜", "許宸", "黃寧瑤", "許茜", "美戀姐"],
+            "10": ["翁毓澤財務長", "翁毓澤財務長", "徐華梅處長", "范貴華處長", "陳宇祥處長", "連植誠經理", "吳俊霖經理", "王美幸經理", "王美靜"],
+            "11": ["謝慧美處長", "游家昂經理", "游家昂經理", "游家昂經理", "劉秉璋經理", "李健良經理", "謝宜妙", "賴慶玲", "朱虹霏"],
+            "12": ["詹文慶經理", "林之丘經理", "古曜瑋經理", "邱鋕銘經理", "賴禹滔", "林怡伸", "張仕達", "沈晉仕", "沈晉仕"],
+            "13": ["正翔哥", "自然哥", "路得姐", "張天財", "寧謙", "徐大皓", "郭家蓉", "藍義信", "藍爸", "藍媽"],
+            "14": ["謝慶雅", "炫凱", "謝振泉", "麗雲", "謝慶瑜", "盛宏", "許宸", "黃寧瑤", "許茜", "美戀", "翟祖欣"],
             "15": ["樊子郡", "黃丞志", "蔡孟庭", "周信恩", "游雅琇", "楊皓翔", "趙柏凱", "千慈", "強聖芬"],
-            "16": ["蔣昀穎", "彭欣鎂", "姜妤庭", "李玉琪", "張乃文", "黃敏怡", "張佩臻", "邱家琦", "邱家琦", "邱婕瑀"],
-            "17": ["賴珮吟", "楊孟玟", "張安琪", "張寧君", "劉韋萍", "林筱珊", "林筱珊"],
+            "16": ["蔣昀穎", "彭欣鎂", "姜妤庭", "李玉琪", "張乃文", "黃敏怡", "張佩臻", "邱家琦", "邱婕瑀"],
+            "17": ["賴珮吟", "楊孟玟", "張安琪", "張寧君", "劉韋萍", "林筱珊"],
             "18": ["陳曉玫", "莊智堯", "陳雨荷", "莊仲", "林美賢", "林上潔", "王歡", "王歡", "葉靜蓉", "彭祺惠"],
             "19": ["廖盛恩", "許家馨", "蕭加恩", "董信慈", "蘇家萱", "林孟慧", "楊予欣", "徐宛瑜", "施政良", "林箴言"],
             "20": ["陳德智", "曾法蘭", "陳小曦", "吳子潔", "李旭恩", "李倚寬", "李倚心", "李倚敬"],
-            "21": ["梁孟霞", "丁賢二", "林明志", "鍾佳純", "陳俊吉", "趙旭昇", "蔡佩真", "羅一凡", "蔡淑宜"],
+            "21": ["梁孟霞", "丁賢二", "林明志", "鍾佳純", "陳俊吉", "趙旭昇", "蔡佩真", "蔡淑宜", "羅一凡", "蔣祖秋"],
             "22": ["陳佳樂", "江成皓", "陳碧珠", "王加恩", "黃姿驊", "劉瀚文", "劉璟萱", "林聖哲", "陳存偉", "莊于萱"],
             "23": ["王品恩", "沈書婷", "林榮祥", "陳奕晏", "陳佳美", "孫仙平", "張白穗", "孫伯勻", "韓松霖", "江禹蓁"],
-            "24": ["李欣芳", "鄭佩儒", "馬育慈", "徐瑋慧", "侯淑鳳（素）", "蔣祖秋", "陳品蓉", "俞蓓華", "陳桂枝", "高連春"],
-            "25": ["楊媁婷", "吳琪琦", "陳宇聖", "黃冠霖", "丁振新", "林允中", "陳熙"],
-            "26": ["林鼎言", "陳佳穎", "陳得安", "陳宇凱", "莊亦真", "羅以樂", "羅以欣", "張蓓怡", "黃馨瑩"],
+            "24": ["李欣芳", "鄭佩儒", "馬堉慈", "徐瑋慧", "侯淑鳳（素）", "蔡惠鈴", "陳品蓉", "開連", "陳桂枝", "高連春"],
+            "25": ["楊媁婷", "吳琪琦", "陳宇聖", "黃冠霖", "林允中", "丁振新", "陳熙"],
+            "26": ["林鼎言", "陳佳穎", "陳得安", "陳宇凱", "莊亦真", "羅以樂", "羅以欣", "張蓓怡", "黃馨瑩", "林肯平"],
             "27": ["鄭睦宣", "黃沐恩", "周郁庭", "周書平", "陳婉瑜", "林友翔", "劉加恩", "孫韻嵐", "陳敬庭", "徐子昕"],
             "28": ["陳麒元", "涂惠盈", "陳慕祈", "朱萬方", "閻貴亨", "閻善敏", "閻善真", "閻善恩", "廖峻偉", "李言光"],
             "29": ["黃愛薇", "康晉嘉", "方艾婷", "劉振興", "胡晏菽", "陳守愚", "嚴吉", "陳義藍", "陳義聆"],
@@ -528,62 +532,87 @@
             "31": ["陳樂祈", "陳有容", "譚筱蓉", "田苡琳", "潘宇希", "莊昕凌", "陳蓓馨", "李函霏", "詹子怡", "蔡佳欣"]
         };
 
-        // 綁定於全域確保 Module 能存取
         window.seatingData = seatingData;
         window.checkedInGuests = window.checkedInGuests || new Set();
+        window.activeTableId = null;
 
         let currentHighlightedTableId = null;
 
-        // 生成安全一致的 ID
+        // 清洗並正規化桌號，消除 Excel 裡 BOM 檔頭、"第 X 桌" 等不匹配情況
+        function normalizeKey(key) {
+            if (!key) return '';
+            let cleaned = key.toString()
+                .replace(/^\uFEFF/, '') // 移除 BOM 字元
+                .replace(/第/g, '')
+                .replace(/桌/g, '')
+                .trim();
+            // 如果是純數字，剔除前導零 (如 "02" 轉為 "2")
+            if (/^\d+$/.test(cleaned)) {
+                cleaned = parseInt(cleaned, 10).toString();
+            }
+            return cleaned;
+        }
+
+        // 本地取得唯一的賓客 Key
         function getGuestKeyLocal(tableId, guestName) {
             return `${tableId}_${guestName}`.replace(/[\s\(\)（）\+]/g, '_');
         }
 
+        // 開啟賓客名單抽屜
         function openBottomSheet(tableId) {
-            if (typeof window.setActiveTableId === 'function') {
-                window.setActiveTableId(tableId);
-            }
+            window.activeTableId = tableId;
             window.renderGuestListUI(tableId);
 
-            // 顯示 Drawer
+            // 顯示 Backdrop 與 Sheet
             document.getElementById('backdrop').classList.remove('hidden');
             document.getElementById('bottomSheet').classList.add('open');
         }
 
-        // 把 UI 繪製邏輯抽離，以便在雲端數據同步時能被 module 腳本即時重繪
+        // 關閉抽屜
+        function closeBottomSheet() {
+            document.getElementById('bottomSheet').classList.remove('open');
+            document.getElementById('backdrop').classList.add('hidden');
+            window.activeTableId = null;
+        }
+
+        // 繪製抽屜裡的賓客 UI
         window.renderGuestListUI = function(tableId) {
-            const guests = seatingData[tableId];
-            if (!guests) return;
-
-            const isMainTable = (tableId === '主桌');
-
-            // 1. 設定標題
-            document.getElementById('drawerTitle').innerText = isMainTable ? '主桌' : `第 ${tableId} 桌`;
+            const currentData = window.seatingData || seatingData;
             
-            // 2. 設定左邊的小圖案
+            // 使用正規化的 Key 去找名單，防止 mismatch
+            const cleanTableId = normalizeKey(tableId);
+            const guests = currentData[cleanTableId];
+            if (!guests) {
+                console.warn(`未找到對應的桌次名單: 輸入為 ${tableId}, 尋找 ${cleanTableId}`);
+                return;
+            }
+
+            const isMainTable = (cleanTableId === '主桌');
+
+            // 1. 設定抽屜標題
+            document.getElementById('drawerTitle').innerText = isMainTable ? '主桌' : `第 ${cleanTableId} 桌`;
+            
+            // 2. 設定左邊桌號徽章樣式
             const iconContainer = document.getElementById('drawerTableIcon');
             if (isMainTable) {
                 iconContainer.innerHTML = '<i class="fa-solid fa-crown text-amber-300"></i>';
                 iconContainer.className = "w-10 h-10 rounded-full bg-red-800 text-white flex items-center justify-center font-black text-base border border-red-700";
             } else {
-                iconContainer.innerHTML = tableId;
+                iconContainer.innerHTML = cleanTableId;
                 iconContainer.className = "w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-black text-sm";
             }
 
-            // 3. 填充賓客列表
+            // 3. 渲染賓客列表
             const listContainer = document.getElementById('drawerGuestList');
             listContainer.innerHTML = '';
 
             guests.forEach((guest, index) => {
-                // 素食標記
                 const isVeg = guest.includes('素') || guest.includes('（素）') || guest.includes('(素)');
                 const cleanName = guest.replace(/（素）/g, '').replace(/\(素\)/g, '').replace(/素/g, '');
 
-                // 檢查是否已報到
-                const guestKey = getGuestKeyLocal(tableId, guest);
+                const guestKey = getGuestKeyLocal(cleanTableId, guest);
                 const isCheckedIn = window.checkedInGuests && window.checkedInGuests.has(guestKey);
 
-                // 卡片容器
                 const item = document.createElement('div');
                 item.className = `p-3 rounded-xl border flex items-center justify-between text-sm transition-all duration-200 cursor-pointer active:scale-95 ${
                     isCheckedIn
@@ -593,10 +622,9 @@
                         : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                 }`;
 
-                // 點擊整張卡片即能直接切換報到狀態
                 item.onclick = async () => {
                     if (typeof window.toggleCheckIn === 'function') {
-                        await window.toggleCheckIn(tableId, guest);
+                        await window.toggleCheckIn(cleanTableId, guest);
                     }
                 };
 
@@ -619,18 +647,111 @@
             });
         };
 
-        // 關閉底層抽屜
-        function closeBottomSheet() {
-            document.getElementById('bottomSheet').classList.remove('open');
-            document.getElementById('backdrop').classList.add('hidden');
-            if (typeof window.setActiveTableId === 'function') {
-                window.setActiveTableId(null);
-            }
-        }
+        // 即時繪製桌位狀態（有人的桌次會跳起小綠點）
+        window.updateMapTableStatus = function() {
+            const currentSeatingData = window.seatingData || seatingData;
+            Object.keys(currentSeatingData).forEach(tableId => {
+                // 將表格ID如 "2" 轉為視覺對應的 DOM 元素
+                const domTableId = tableId === '主桌' ? '主桌' : tableId;
+                const targetWrapper = document.getElementById(`table-${domTableId}`);
+                if (!targetWrapper) return;
 
+                // 檢查是否有賓客已報到
+                const hasAnyCheckin = currentSeatingData[tableId].some(guest => {
+                    const guestKey = getGuestKeyLocal(tableId, guest);
+                    return window.checkedInGuests && window.checkedInGuests.has(guestKey);
+                });
+
+                // 清除舊的小綠點
+                const existingBadge = targetWrapper.querySelector('.checkin-badge');
+                if (existingBadge) {
+                    existingBadge.remove();
+                }
+
+                if (hasAnyCheckin) {
+                    const badge = document.createElement('div');
+                    badge.className = "checkin-badge w-3.5 h-3.5 bg-emerald-500 rounded-full absolute -top-1 -right-1 border-2 border-white shadow-md z-20 pointer-events-none animate-bounce";
+                    targetWrapper.appendChild(badge);
+                }
+            });
+        };
+
+        // 更新現場出席儀表板資料與開飯指標提示
+        window.updateAttendanceDashboard = function() {
+            const currentData = window.seatingData || seatingData;
+            let totalGuests = 0;
+            let arrivedGuests = 0;
+            const totalTablesCount = Object.keys(currentData).length;
+            let occupiedTablesCount = 0;
+
+            Object.keys(currentData).forEach(tableId => {
+                const guests = currentData[tableId];
+                let tableHasArrived = false;
+                guests.forEach(guest => {
+                    totalGuests++;
+                    const guestKey = getGuestKeyLocal(tableId, guest);
+                    if (window.checkedInGuests && window.checkedInGuests.has(guestKey)) {
+                        arrivedGuests++;
+                        tableHasArrived = true;
+                    }
+                });
+                if (tableHasArrived) {
+                    occupiedTablesCount++;
+                }
+            });
+
+            // 計算百分比
+            const guestPercent = totalGuests > 0 ? Math.round((arrivedGuests / totalGuests) * 100) : 0;
+            const tablePercent = totalTablesCount > 0 ? Math.round((occupiedTablesCount / totalTablesCount) * 100) : 0;
+
+            // 更新數據標籤
+            document.getElementById('statsArrivedCount').innerText = `${arrivedGuests} / ${totalGuests} 人`;
+            document.getElementById('statsArrivedPercent').innerText = `${guestPercent}%`;
+            document.getElementById('statsGuestProgressBar').style.width = `${guestPercent}%`;
+
+            document.getElementById('statsOccupiedTables').innerText = `${occupiedTablesCount} / ${totalTablesCount} 桌`;
+            document.getElementById('statsTablePercent').innerText = `${tablePercent}%`;
+            document.getElementById('statsTableProgressBar').style.width = `${tablePercent}%`;
+
+            // 開飯指標提示判定 (當已到場比例 >= 70%)
+            const feastBanner = document.getElementById('feastIndicatorBanner');
+            if (guestPercent >= 70) {
+                feastBanner.className = "mt-4 p-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md border border-amber-400/30 animate-pulse flex flex-col justify-between items-center gap-2 text-center";
+                feastBanner.innerHTML = `
+                    <div class="flex flex-col items-center gap-1.5">
+                        <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl animate-bounce">
+                            🎉
+                        </div>
+                        <div>
+                            <h3 class="font-black text-sm tracking-wide text-amber-50">已到場賓客已達 ${guestPercent}%！</h3>
+                            <p class="text-[11px] text-amber-100 mt-0.5">（已超越開飯推薦標準 70%，建議通知開飯！）</p>
+                        </div>
+                    </div>
+                    <span class="w-full bg-white text-amber-950 text-xs font-black py-2 rounded-full shadow-sm tracking-wider flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-utensils"></i> 建議正式開飯
+                    </span>
+                `;
+            } else {
+                const targetCount = Math.ceil(totalGuests * 0.7);
+                const guestsLeft = targetCount - arrivedGuests;
+                feastBanner.className = "mt-4 p-4 rounded-2xl bg-slate-50 text-slate-600 border border-slate-200 flex items-center gap-3.5";
+                feastBanner.innerHTML = `
+                    <div class="w-9 h-9 rounded-full bg-slate-200/60 flex items-center justify-center text-base text-slate-500 shrink-0">
+                        ⏳
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xs text-slate-700">目前到場率 ${guestPercent}%</h3>
+                        <p class="text-[10px] text-slate-400 mt-0.5">開飯指標為 70%（約需 ${targetCount} 人），還差 ${guestsLeft > 0 ? guestsLeft : 0} 人，請接待人員繼續引導入座。</p>
+                    </div>
+                `;
+            }
+        };
+
+        // 賓客關鍵字搜尋
         function handleSearch(query) {
             const resultsDiv = document.getElementById('searchResults');
             const clearBtn = document.getElementById('clearSearchBtn');
+            const currentData = window.seatingData || seatingData;
 
             if (!query.trim()) {
                 resultsDiv.classList.add('hidden');
@@ -643,9 +764,9 @@
             const trimmed = query.toLowerCase().trim();
             const matches = [];
 
-            // 掃描各桌名單中是否包含搜尋詞
-            Object.keys(seatingData).forEach(tableId => {
-                seatingData[tableId].forEach(guest => {
+            // 搜尋全部名單
+            Object.keys(currentData).forEach(tableId => {
+                currentData[tableId].forEach(guest => {
                     if (guest.toLowerCase().includes(trimmed)) {
                         matches.push({
                             tableId: tableId,
@@ -655,7 +776,7 @@
                 });
             });
 
-            // 渲染搜尋建議下拉框
+            // 顯示搜尋結果
             if (matches.length > 0) {
                 resultsDiv.innerHTML = '';
                 matches.forEach(match => {
@@ -665,7 +786,6 @@
                     const isVeg = match.displayName.includes('素');
                     const cleanName = match.displayName.replace(/（素）/g, '').replace(/\(素\)/g, '').replace(/素/g, '');
 
-                    // 檢查搜尋結果中來賓的報到狀態
                     const guestKey = getGuestKeyLocal(match.tableId, match.displayName);
                     const isCheckedIn = window.checkedInGuests && window.checkedInGuests.has(guestKey);
 
@@ -694,7 +814,7 @@
             }
         }
 
-        // 清除搜尋結果
+        // 清除搜尋
         function clearSearch() {
             document.getElementById('searchInput').value = '';
             document.getElementById('searchResults').classList.add('hidden');
@@ -702,7 +822,6 @@
             resetCurrentHighlight();
         }
 
-        // 重置當前的高亮桌位
         function resetCurrentHighlight() {
             if (currentHighlightedTableId) {
                 const prevElem = document.getElementById(`table-${currentHighlightedTableId}`)?.firstElementChild;
@@ -713,19 +832,135 @@
             }
         }
 
+        // 高亮定位與滾動
         function highlightAndScrollToTable(tableId) {
             resetCurrentHighlight();
-
             const targetWrapper = document.getElementById(`table-${tableId}`);
             if (targetWrapper) {
                 const innerCircle = targetWrapper.firstElementChild;
                 innerCircle.classList.add('animate-highlight');
                 currentHighlightedTableId = tableId;
 
-                // 平滑滾動讓該桌置中
                 targetWrapper.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
             }
         }
+
+        // Google 試算表串接與正規化覆蓋處理
+        async function fetchGoogleSheetData() {
+            const sheetId = '11nPoCdiFalNKW0WjUh07aO8wjc52w-Xg00FSYNbaiCU';
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('雲端載入失敗');
+                const csvText = await response.text();
+                
+                // 解析 CSV 資料列
+                const rows = [];
+                let currentRow = [];
+                let currentCell = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < csvText.length; i++) {
+                    const char = csvText[i];
+                    const nextChar = csvText[i+1];
+                    if (char === '"') {
+                        if (inQuotes && nextChar === '"') {
+                            currentCell += '"';
+                            i++;
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        currentRow.push(currentCell.trim());
+                        currentCell = '';
+                    } else if ((char === '\r' || char === '\n') && !inQuotes) {
+                        if (char === '\r' && nextChar === '\n') i++;
+                        currentRow.push(currentCell.trim());
+                        rows.push(currentRow);
+                        currentRow = [];
+                        currentCell = '';
+                    } else {
+                        currentCell += char;
+                    }
+                }
+                if (currentCell || currentRow.length > 0) {
+                    currentRow.push(currentCell.trim());
+                    rows.push(currentRow);
+                }
+
+                if (rows.length < 2) return;
+
+                // 智慧感應：智慧掃描前 10 列，自動鎖定桌次與人名欄位
+                let tableColIdx = 1;
+                let nameColIdx = 0;
+                let col0Score = 0;
+                let col1Score = 0;
+
+                for (let r = 0; r < Math.min(rows.length, 10); r++) {
+                    if (!rows[r] || rows[r].length < 2) continue;
+                    const val0 = normalizeKey(rows[r][0]);
+                    const val1 = normalizeKey(rows[r][1]);
+                    if (val0 === '主桌' || /^\d+$/.test(val0)) col0Score++;
+                    if (val1 === '主桌' || /^\d+$/.test(val1)) col1Score++;
+                }
+
+                if (col0Score > col1Score) {
+                    tableColIdx = 0;
+                    nameColIdx = 1;
+                    console.log("【智慧感應】：已偵測到「桌次在前、姓名在後」格式");
+                } else {
+                    tableColIdx = 1;
+                    nameColIdx = 0;
+                    console.log("【智慧感應】：已偵測到「姓名在前、桌次在後」格式");
+                }
+
+                const newSeatingData = {};
+                
+                // 檢查第一列是否是說明欄/表頭 (若第一列姓名欄含有 "名" 或 "桌" 則排除)
+                const firstRowTableVal = normalizeKey(rows[0][tableColIdx]);
+                const isHeader = (rows[0][nameColIdx] || '').includes('名') || (rows[0][tableColIdx] || '').includes('桌') || (firstRowTableVal === '');
+                const startIdx = isHeader ? 1 : 0;
+
+                for (let i = startIdx; i < rows.length; i++) {
+                    const r = rows[i];
+                    if (r.length < 2) continue;
+                    const tableIdClean = normalizeKey(r[tableColIdx]);
+                    const guestName = r[nameColIdx].trim();
+                    if (!tableIdClean || !guestName || tableIdClean === '') continue;
+                    
+                    if (!newSeatingData[tableIdClean]) {
+                        newSeatingData[tableIdClean] = [];
+                    }
+                    newSeatingData[tableIdClean].push(guestName);
+                }
+
+                // 成功寫入記憶體並備份在 LocalStorage
+                if (Object.keys(newSeatingData).length > 0) {
+                    window.seatingData = newSeatingData;
+                    localStorage.setItem('cached_seating_data', JSON.stringify(newSeatingData));
+                    console.log("【同步成功】：已完美匹配雲端名單！", newSeatingData);
+                    
+                    // 重新刷新地圖與儀表板顯示
+                    window.updateMapTableStatus();
+                    window.updateAttendanceDashboard();
+                }
+            } catch (err) {
+                console.warn("雲端同步異常，自動降級為本地安全備份：", err);
+                const cachedData = localStorage.getItem('cached_seating_data');
+                if (cachedData) {
+                    window.seatingData = JSON.parse(cachedData);
+                    window.updateMapTableStatus();
+                    window.updateAttendanceDashboard();
+                }
+            }
+        }
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchGoogleSheetData();
+            window.updateMapTableStatus();
+            window.updateAttendanceDashboard();
+        });
     </script>
 </body>
 </html>
