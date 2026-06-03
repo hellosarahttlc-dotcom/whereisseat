@@ -360,7 +360,7 @@
                         <i class="fa-solid fa-user-lock text-red-600 mt-0.5 shrink-0"></i>
                         <div>
                             <strong class="font-bold block text-red-900 mb-0.5">第 10、11、12 桌預備位限制：</strong>
-                            此三桌雖各設有 1 個預備位，但<span class="underline font-bold">僅限郁翔同事及長官</span>，請招待同工特別注意。
+                            此三桌雖各設有 1 個預備位，但<span class="underline font-bold">僅限郁翔長官同事限定</span>，請招待同工特別注意。
                         </div>
                     </div>
                 </div>
@@ -385,6 +385,27 @@
                             <span class="block text-[10px] text-slate-400 font-bold">第 15 桌</span>
                             <span class="text-xs font-black text-slate-700">預備位 4</span>
                         </div>
+                        
+                        <!-- 第 10、11、12 桌同事長官專用預備位 -->
+                        <div onclick="highlightAndScrollToTable('10'); openBottomSheet('10')" class="p-2.5 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 hover:border-amber-300 transition text-left cursor-pointer active:scale-95">
+                            <span class="block text-[10px] text-amber-700 font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-user-lock"></i>第 10 桌
+                            </span>
+                            <span class="text-xs font-black text-slate-700">限郁翔長官同事限定</span>
+                        </div>
+                        <div onclick="highlightAndScrollToTable('11'); openBottomSheet('11')" class="p-2.5 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 hover:border-amber-300 transition text-left cursor-pointer active:scale-95">
+                            <span class="block text-[10px] text-amber-700 font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-user-lock"></i>第 11 桌
+                            </span>
+                            <span class="text-xs font-black text-slate-700">限郁翔長官同事限定</span>
+                        </div>
+                        <div onclick="highlightAndScrollToTable('12'); openBottomSheet('12')" class="p-2.5 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 hover:border-amber-300 transition text-left cursor-pointer active:scale-95 col-span-2">
+                            <span class="block text-[10px] text-amber-700 font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-user-lock"></i>第 12 桌
+                            </span>
+                            <span class="text-xs font-black text-slate-700">限郁翔長官同事限定</span>
+                        </div>
+
                         <div onclick="highlightAndScrollToTable('17'); openBottomSheet('17')" class="p-2.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-red-50 hover:border-red-200 transition text-left cursor-pointer active:scale-95 col-span-2">
                             <span class="block text-[10px] text-slate-400 font-bold">第 17 桌</span>
                             <span class="text-xs font-black text-slate-700">預備位 5、6、7</span>
@@ -507,7 +528,7 @@
                 <input type="text" id="settingSheetId" placeholder="輸入 11nPoCdi... 等試算表 ID" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-burgundy-500">
             </div>
 
-            <!-- Firebase 網址設定 -->
+            <!-- Firebase Realtime DB URL 設定 -->
             <div class="space-y-1.5">
                 <label class="block text-xs font-bold text-slate-700">Firebase Realtime DB URL</label>
                 <input type="text" id="settingFirebaseUrl" placeholder="https://[你的專案ID].firebasedatabase.app/" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-burgundy-500">
@@ -530,6 +551,33 @@
         function normalizeKey(key) {
             if (key === null || key === undefined) return '';
             return String(key).trim();
+        }
+
+        // 強制注入預備位的守護核心：無論載入何種來源的資料，均在名單末尾強制補齊預備位
+        function ensureReserveSeats(data) {
+            if (!data) return data;
+            const reserves = {
+                "5": ["預備位1"],
+                "6": ["預備位2"],
+                "7": ["預備位3"],
+                "10": ["預備位"],
+                "11": ["預備位"],
+                "12": ["預備位"],
+                "15": ["預備位4"],
+                "17": ["預備位5", "預備位6", "預備位7"],
+                "20": ["預備位8", "預備位9"]
+            };
+            for (const [tableId, reserveList] of Object.entries(reserves)) {
+                if (!data[tableId]) {
+                    data[tableId] = [];
+                }
+                reserveList.forEach(name => {
+                    if (!data[tableId].includes(name)) {
+                        data[tableId].push(name);
+                    }
+                });
+            }
+            return data;
         }
 
         // 1. 本地狀態快取初始化
@@ -820,28 +868,28 @@
             "7": ["吳厚儒", "張峻維", "張峻維", "李貞慧", "張雅評", "陳仕匯", "張彥瑋", "蔡心博", "張惠之", "預備位3"],
             "8": ["吳曉君", "張雅菁", "陳小包", "黃品佳", "施雅林", "吳佳勳", "郭品君", "許乃文", "春曉", "陳愛婷"],
             "9": ["楊宗翰", "林瑞哲", "林瑞哲", "劉士丕", "劉士丕", "林廷諭", "張家綱", "王智勝", "王智勝女友", "蘇渝玲"],
-            "10": ["翁毓澤財務長", "翁毓澤財務長", "徐華梅處長", "范貴華處長", "陳宇祥處長", "連植誠經理", "吳俊霖經理", "王美幸經理", "王美靜"],
-            "11": ["謝慧美處長", "游家昂經理", "游家昂經理", "游家昂經理", "劉秉璋經理", "李健良經理", "謝宜妙", "賴慶玲", "朱虹霏"],
-            "12": ["詹文慶經理", "林之丘經理", "古曜瑋經理", "邱鋕銘經理", "賴禹滔", "林怡伸", "張仕達", "沈晉仕", "沈晉仕"],
+            "10": ["翁毓澤財務長", "翁毓澤財務長", "徐華梅處長", "范貴華處長", "陳宇祥處長", "連植誠經理", "吳俊霖經理", "王美幸經理", "王美靜", "預備位"],
+            "11": ["謝慧美處長", "游家昂經理", "游家昂經理", "游家昂經理", "劉秉璋經理", "李健良經理", "謝宜妙", "賴慶玲", "朱虹霏", "預備位"],
+            "12": ["詹文慶經理", "林之丘經理", "古曜瑋經理", "邱鋕銘經理", "賴禹滔", "林怡伸", "張仕達", "沈晉仕", "沈晉仕", "預備位"],
             "13": ["正翔哥", "自然哥", "路得姐", "張天財", "寧謙", "徐大皓", "郭家蓉", "藍義信", "藍爸", "藍媽"],
             "14": ["謝慶雅", "炫凱", "謝振泉", "麗雲", "謝慶瑜", "盛宏", "許宸", "黃寧瑤", "許茜", "美戀", "翟祖欣"],
             "15": ["樊子郡", "黃丞志", "蔡孟庭", "周信恩", "游雅琇", "楊皓翔", "趙柏凱", "千慈", "強聖芬", "預備位4"],
             "16": ["蔣昀穎", "彭欣鎂", "姜妤庭", "李玉琪", "張乃文", "黃敏怡", "張佩臻", "邱家琦", "邱婕瑀"],
             "17": ["賴珮吟", "楊孟玟", "張安琪", "張寧君", "劉韋萍", "林宥姗", "預備位5", "預備位6", "預備位7"],
             "18": ["陳曉玫", "莊智堯", "陳雨荷", "莊仲", "林美賢", "林上潔", "王歡", "王歡", "葉靜蓉", "彭祺惠"],
-            "19": ["廖盛恩", "許家馨", "蕭加恩", "董信慈", "蘇家萱", "林孟慧", "楊予欣", "徐宛瑜", "施政良", "林箴言"],
+            "19": ["廖盛恩", "雙林家", "許家馨", "蕭加恩", "董信慈", "蘇家萱", "林孟慧", "楊予欣", "徐宛瑜", "施政良", "林箴言"],
             "20": ["陳德智", "曾法蘭", "陳小曦", "吳子潔", "李旭恩", "李倚寬", "李倚心", "李倚敬", "預備位8", "預備位9"],
             "21": ["梁孟霞", "丁賢二", "林明志", "鍾佳純", "陳俊吉", "趙旭昇", "蔡佩真", "蔡淑宜", "羅一凡", "蔣祖秋"],
             "22": ["陳佳樂", "江成皓", "陳碧珠", "王加恩", "黃姿驊", "劉瀚文", "劉璟萱", "林聖哲", "陳存偉", "莊于萱"],
             "23": ["王品恩", "沈書婷", "林榮祥", "陳奕晏", "陳佳美", "孫仙平", "張白穗", "孫伯勻", "韓松霖", "江禹蓁"],
             "24": ["李欣芳", "鄭佩儒", "馬堉慈", "徐瑋慧", "侯淑鳳（素）", "蔡惠鈴", "陳品蓉", "俞蓓華", "陳桂枝", "高連春"],
             "25": ["楊媁婷", "吳琪琦", "陳宇聖", "黃冠霖", "林允中", "丁振新", "陳熙"],
-            "26": ["林鼎言", "陳佳穎", "陳得安", "陳宇凱", "莊亦真", "羅以樂", "羅以欣", "張蓓怡", "黃馨瑩", "林肯平"],
+            "26": ["林鼎言", "陳佳穎", "陳得安", "陳宇凱", "莊亦真", "羅以樂", "羅以欣", "張蓓怡", "黃馨營", "林肯平"],
             "27": ["鄭睦宣", "黃沐恩", "周郁庭", "周書平", "陳婉瑜", "林友翔", "劉加恩", "孫韻嵐", "陳敬庭", "徐子昕"],
             "28": ["陳麒元", "涂惠盈", "陳慕祈", "朱萬方", "閻貴亨", "閻善敏", "閻善真", "閻善恩", "廖峻偉", "李言光"],
             "29": ["黃愛薇", "康晉嘉", "方艾婷", "劉振興", "胡晏菽", "陳守愚", "嚴吉", "陳義藍", "陳義聆", "莊傑智"],
             "30": ["徐慧庭", "王筠惠", "黃筠晴", "王博璇", "陸懷恩", "劉語瞳", "葉宣妤", "詹青頤", "蔡悅聆", "周驪讚"],
-            "31": ["陳樂祈", "陳有容", "譚筱蓉", "田苡琳", "潘宇希", "莊昕凌", "陳蓓馨", "李函霏", "詹子怡", "蔡佳欣"]
+            "31": ["陳樂祈", "陳 have容", "譚筱蓉", "田苡琳", "潘宇希", "莊昕凌", "陳蓓馨", "李函霏", "詹子怡", "蔡佳欣"]
         };
 
         // 喜餅對應名單
@@ -998,7 +1046,8 @@
             { name: "蔡佳欣", type: "喜餅" }
         ];
 
-        window.seatingData = seatingData;
+        // 確保本地寫死的 seatingData 也包含預備位
+        window.seatingData = ensureReserveSeats(seatingData);
         window.cakeSeatingData = defaultCakeData;
 
         // 本地取得唯一的賓客 Key
@@ -1068,7 +1117,13 @@
 
             guests.forEach((guest, index) => {
                 const isVeg = guest.includes('素') || guest.includes('（素）') || guest.includes('(素)');
-                const cleanName = guest.replace(/（素）/g, '').replace(/\(素\)/g, '').replace(/素/g, '');
+                // 智慧判定是否為 10, 11, 12 桌限定的長官同事預備位 (不需要再補上名稱後綴)
+                const isRestrictedReserve = (cleanTableId === '10' || cleanTableId === '11' || cleanTableId === '12') && guest === '預備位';
+                
+                let cleanName = guest
+                    .replace(/（素）/g, '')
+                    .replace(/\(素\)/g, '')
+                    .replace(/素/g, '');
 
                 const guestKey = getGuestKeyLocal(cleanTableId, guest);
                 const isCheckedIn = window.checkedInGuests && window.checkedInGuests.has(guestKey);
@@ -1077,9 +1132,11 @@
                 item.className = `p-3 rounded-xl border flex items-center justify-between text-sm transition-all duration-200 cursor-pointer active:scale-95 ${
                     isCheckedIn
                     ? 'bg-emerald-100 border-emerald-400 text-emerald-950 font-bold shadow-sm'
-                    : isVeg 
-                        ? 'bg-amber-50/80 border-amber-200 text-slate-800' 
-                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
+                    : isRestrictedReserve
+                        ? 'bg-amber-50 border-amber-300 text-amber-950 font-semibold'
+                        : isVeg 
+                            ? 'bg-amber-50/80 border-amber-200 text-slate-800' 
+                            : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                 }`;
 
                 item.onclick = async () => {
@@ -1088,12 +1145,19 @@
                     }
                 };
 
+                let labelHTML = '';
+                if (isVeg) {
+                    labelHTML = '<span class="text-[9px] text-amber-700 flex items-center gap-0.5 mt-0.5"><i class="fa-solid fa-leaf text-[8px]"></i>素</span>';
+                } else if (isRestrictedReserve) {
+                    labelHTML = '<span class="text-[9px] text-amber-700 flex items-center gap-0.5 mt-0.5"><i class="fa-solid fa-user-lock text-[8px]"></i>限郁翔長官同事限定</span>';
+                }
+
                 item.innerHTML = `
                     <div class="flex items-center gap-2 truncate">
                         <span class="text-xs opacity-40 font-mono">${index + 1}</span>
                         <div class="flex flex-col truncate">
                             <span class="truncate ${isCheckedIn ? 'line-through text-emerald-800/60' : ''}">${cleanName}</span>
-                            ${isVeg ? '<span class="text-[9px] text-amber-700 flex items-center gap-0.5 mt-0.5"><i class="fa-solid fa-leaf text-[8px]"></i>素</span>' : ''}
+                            ${labelHTML}
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5 ml-2">
@@ -1573,6 +1637,8 @@
                 }
 
                 if (Object.keys(newSeatingData).length > 0) {
+                    // 強制在最末尾追加所有預備位名額
+                    ensureReserveSeats(newSeatingData);
                     window.seatingData = newSeatingData;
                     localStorage.setItem('cached_seating_data', JSON.stringify(newSeatingData));
                 }
@@ -1590,7 +1656,11 @@
                 console.warn("一站式名單讀取異常，改用預設快取:", err);
                 const cachedSeating = localStorage.getItem('cached_seating_data');
                 const cachedCakes = localStorage.getItem('cached_cake_data');
-                if (cachedSeating) window.seatingData = JSON.parse(cachedSeating);
+                if (cachedSeating) {
+                    const parsed = JSON.parse(cachedSeating);
+                    ensureReserveSeats(parsed);
+                    window.seatingData = parsed;
+                }
                 if (cachedCakes) window.cakeSeatingData = JSON.parse(cachedCakes);
                 
                 window.renderCakeList();
