@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>郁翔＆蔣瑀婚宴桌次圖</title>
+    <title>郁翔＆蔣瑀婚宴系統</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts Inter & Noto Sans TC -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;600;800&family=Noto+Sans+TC:wght=400;700;900&display=swap" rel="stylesheet">
     <!-- FontAwesome 圖示 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -15,6 +15,22 @@
         tailwind.config = {
             theme: {
                 extend: {
+                    colors: {
+                        burgundy: {
+                            50: '#fdf2f2',
+                            100: '#fde8e8',
+                            500: '#f05252',
+                            700: '#8c1c1c',
+                            800: '#721616',
+                            900: '#5a1010',
+                        },
+                        roseGold: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            500: '#f43f5e',
+                            700: '#be185d',
+                        }
+                    },
                     fontFamily: {
                         sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
                     }
@@ -25,7 +41,7 @@
     <style>
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
-            background-color: #f3f4f6; /* 淺灰色背景 */
+            background-color: #fcf8f8; /* 淡淡的暖白婚宴風 */
             -webkit-tap-highlight-color: transparent;
         }
         /* 隱藏滾動條 */
@@ -63,17 +79,18 @@
         }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col overflow-x-hidden select-none pb-8">
+<body class="text-slate-800 min-h-screen flex flex-col overflow-x-hidden select-none pb-12">
 
-    <header class="bg-[#8c1c1c] text-white shadow-md sticky top-0 z-40 px-4 py-3.5 flex flex-col gap-2.5">
+    <!-- 頂部紅色導覽列 -->
+    <header class="bg-burgundy-700 text-white shadow-md sticky top-0 z-40 px-4 py-3 flex flex-col gap-2">
         <div class="max-w-md mx-auto w-full flex items-center justify-between">
             <div class="flex items-center gap-2">
-                <i class="fa-solid fa-hotel text-amber-300 text-lg animate-pulse"></i>
-                <!-- 🎯 點擊此處 5 下即可觸發隱藏設定 -->
+                <i id="headerIcon" class="fa-solid fa-hotel text-amber-300 text-lg"></i>
+                <!-- 隱藏密碼鎖：快速點擊此處標題 5 下解鎖設定 -->
                 <div onclick="handleSecretClick()" class="cursor-pointer active:opacity-80 transition select-none">
-                    <h1 class="text-base font-black tracking-wider text-amber-100">郁翔＆蔣瑀婚宴</h1>
+                    <h1 class="text-base font-black tracking-wider text-amber-100">郁翔＆蔣瑀婚宴系統</h1>
                     <p class="text-[10px] text-red-200 flex items-center gap-1.5">
-                        <span>彭園 BCD 廳 配置</span>
+                        <span id="headerSubtitle">彭園 BCD 廳 整合管理</span>
                         <span id="syncIndicator" class="inline-flex items-center gap-1 text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.2 rounded-full">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                             同步中...
@@ -82,8 +99,18 @@
                 </div>
             </div>
         </div>
+
+        <!-- 雙系統切換 Tab 按鈕組 -->
+        <div class="max-w-md mx-auto w-full grid grid-cols-2 bg-burgundy-800 p-1 rounded-full border border-burgundy-900/40">
+            <button onclick="switchTab('seating')" id="tabBtnSeating" class="py-2 text-xs font-black rounded-full flex items-center justify-center gap-1.5 transition-all duration-300 bg-white text-burgundy-800 shadow-md">
+                <i class="fa-solid fa-map-location-dot"></i>桌次地圖
+            </button>
+            <button onclick="switchTab('cakes')" id="tabBtnCakes" class="py-2 text-xs font-bold rounded-full flex items-center justify-center gap-1.5 transition-all duration-300 text-burgundy-200 hover:text-white">
+                <i class="fa-solid fa-gift"></i>喜餅發放
+            </button>
+        </div>
         
-        <!-- 搜尋輸入框 -->
+        <!-- 智慧搜尋輸入框 -->
         <div class="max-w-md mx-auto w-full relative">
             <div class="relative flex items-center">
                 <span class="absolute left-3.5 text-slate-400">
@@ -95,244 +122,351 @@
                 </button>
             </div>
             
-            <!-- 搜尋下拉建議清單 -->
+            <!-- 智慧搜尋下拉建議清單 -->
             <div id="searchResults" class="absolute left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl max-h-52 overflow-y-auto hidden z-50 text-slate-800">
                 <!-- 動態注入搜尋結果 -->
             </div>
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto py-4 px-3 flex flex-col items-center w-full max-w-4xl mx-auto">
+    <!-- 主內容區 -->
+    <main class="flex-1 py-4 px-3 flex flex-col items-center w-full max-w-4xl mx-auto">
         
-        <!-- 橫向滑動操作提示 -->
-        <div class="w-full max-w-sm mb-2 text-center text-[11px] text-slate-500 bg-slate-200/60 rounded-full py-1 border border-slate-300/40 flex items-center justify-center gap-1">
-            <i class="fa-solid fa-arrows-left-right animate-pulse text-slate-400"></i>
-            <span>請左右拖曳 / 滑動檢視一模一樣的完整桌次配置圖</span>
-        </div>
+        <!-- ==================== 桌次地圖區 ==================== -->
+        <section id="sectionSeating" class="w-full flex flex-col items-center gap-4">
+            <!-- 橫向滑動操作提示 -->
+            <div class="w-full max-w-sm text-center text-[11px] text-slate-500 bg-slate-200/60 rounded-full py-1 border border-slate-300/40 flex items-center justify-center gap-1">
+                <i class="fa-solid fa-arrows-left-right animate-pulse text-slate-400"></i>
+                <span>請左右拖曳 / 滑動檢視完整的桌次配置圖</span>
+            </div>
 
-        <!-- 橫向滾動框 -->
-        <div class="w-full overflow-x-auto no-scrollbar py-2 mb-4" id="mapScrollContainer">
-            <div class="min-w-[700px] max-w-[750px] mx-auto bg-white rounded-[2rem] border-[4px] border-slate-800 p-6 relative shadow-lg">
-                
-                <!-- 頂部 LED 標示 -->
-                <div class="grid grid-cols-11 gap-x-1 mb-2 text-center">
-                    <div class="col-span-3 border-t-4 border-sky-500 pt-0.5 text-[10px] text-sky-600 font-black">LED</div>
-                    <div class="col-span-1"></div>
-                    <div class="col-span-3 border-t-4 border-sky-500 pt-0.5 text-[10px] text-sky-600 font-black">LED</div>
-                    <div class="col-span-1"></div>
-                    <div class="col-span-3 border-t-4 border-sky-500 pt-0.5 text-[10px] text-sky-600 font-black">LED</div>
-                </div>
-
-                <!-- 頂部 舞台 STAGE 區 -->
-                <div class="grid grid-cols-11 gap-x-1 mb-8">
-                    <div class="col-start-5 col-span-3 bg-[#a1a1aa] text-white text-center text-xs font-black py-2 tracking-widest rounded-md uppercase shadow-sm">
-                        STAGE 舞台
-                    </div>
-                </div>
-
-                <!-- 網格與 "桌次圖.jpg" 一對一完美映射 -->
-                <div id="seatingGrid" class="grid grid-cols-11 gap-x-1 gap-y-7 relative">
+            <!-- 橫向滾動框 -->
+            <div class="w-full overflow-x-auto no-scrollbar py-2" id="mapScrollContainer">
+                <div class="min-w-[700px] max-w-[750px] mx-auto bg-white rounded-[2rem] border-[4px] border-slate-800 p-6 relative shadow-lg">
                     
-                    <!-- 1. 第一排 (Row 2): 
-                         Left: [21, 22, 23] | Walkway | Center [主桌] | Walkway | Right [10, 11, 12] -->
-                    <div onclick="openBottomSheet('21')" id="table-21" class="col-start-1 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">21</div>
+                    <!-- 頂部 LED 標示 -->
+                    <div class="grid grid-cols-11 gap-x-1 mb-2 text-center">
+                        <div class="col-span-3 border-t-4 border-sky-500 pt-0.5 text-[10px] text-sky-600 font-black">LED</div>
+                        <div class="col-span-1"></div>
+                        <div class="col-span-3 border-t-4 border-sky-500 pt-0.5 text-[10px] text-sky-600 font-black">LED</div>
+                        <div class="col-span-1"></div>
+                        <div class="col-span-3 border-t-4 border-sky-500 pt-0.5 text-[10px] text-sky-600 font-black">LED</div>
                     </div>
-                    <div onclick="openBottomSheet('22')" id="table-22" class="col-start-2 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">22</div>
-                    </div>
-                    <div onclick="openBottomSheet('23')" id="table-23" class="col-start-3 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">23</div>
-                    </div>
-                    
-                    <div class="col-start-4 flex items-center justify-center"><div class="w-4 h-4 bg-[#b5b5ba] rounded-sm"></div></div>
 
-                    <div onclick="openBottomSheet('主桌')" id="table-主桌" class="col-start-6 flex justify-center z-10 relative">
-                        <div class="w-14 h-14 rounded-full border-2 border-amber-300 bg-[#e02424] text-white flex items-center justify-center font-extrabold text-xs shadow-md cursor-pointer active:scale-90 transition tracking-wider relative">
-                            主桌
+                    <!-- 頂部 舞台 STAGE 區 -->
+                    <div class="grid grid-cols-11 gap-x-1 mb-8">
+                        <div class="col-start-5 col-span-3 bg-[#a1a1aa] text-white text-center text-xs font-black py-2 tracking-widest rounded-md uppercase shadow-sm">
+                            STAGE 舞台
                         </div>
                     </div>
 
-                    <div class="col-start-8 flex items-center justify-center"><div class="w-4 h-4 bg-[#b5b5ba] rounded-sm"></div></div>
+                    <!-- 網格與桌次一對一映射 -->
+                    <div id="seatingGrid" class="grid grid-cols-11 gap-x-1 gap-y-7 relative">
+                        
+                        <!-- 1. 第一排 (Row 2) -->
+                        <div onclick="openBottomSheet('21')" id="table-21" class="col-start-1 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">21</div>
+                        </div>
+                        <div onclick="openBottomSheet('22')" id="table-22" class="col-start-2 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">22</div>
+                        </div>
+                        <div onclick="openBottomSheet('23')" id="table-23" class="col-start-3 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">23</div>
+                        </div>
+                        
+                        <div class="col-start-4 flex items-center justify-center"><div class="w-4 h-4 bg-[#b5b5ba] rounded-sm"></div></div>
 
-                    <div onclick="openBottomSheet('10')" id="table-10" class="col-start-9 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">10</div>
-                    </div>
-                    <div onclick="openBottomSheet('11')" id="table-11" class="col-start-10 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">11</div>
-                    </div>
-                    <div onclick="openBottomSheet('12')" id="table-12" class="col-start-11 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">12</div>
+                        <div onclick="openBottomSheet('主桌')" id="table-主桌" class="col-start-6 flex justify-center z-10 relative">
+                            <div class="w-14 h-14 rounded-full border-2 border-amber-300 bg-[#e02424] text-white flex items-center justify-center font-extrabold text-xs shadow-md cursor-pointer active:scale-90 transition tracking-wider relative">
+                                主桌
+                            </div>
+                        </div>
+
+                        <div class="col-start-8 flex items-center justify-center"><div class="w-4 h-4 bg-[#b5b5ba] rounded-sm"></div></div>
+
+                        <div onclick="openBottomSheet('10')" id="table-10" class="col-start-9 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">10</div>
+                        </div>
+                        <div onclick="openBottomSheet('11')" id="table-11" class="col-start-10 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">11</div>
+                        </div>
+                        <div onclick="openBottomSheet('12')" id="table-12" class="col-start-11 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">12</div>
+                        </div>
+
+                        <!-- 2. 第二排 (Row 3) -->
+                        <div onclick="openBottomSheet('24')" id="table-24" class="col-start-1 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">24</div>
+                        </div>
+                        <div onclick="openBottomSheet('25')" id="table-25" class="col-start-2 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">25</div>
+                        </div>
+                        <div onclick="openBottomSheet('26')" id="table-26" class="col-start-3 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">26</div>
+                        </div>
+
+                        <div onclick="openBottomSheet('3')" id="table-3" class="col-start-5 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">3</div>
+                        </div>
+                        
+                        <div onclick="openBottomSheet('2')" id="table-2" class="col-start-7 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">2</div>
+                        </div>
+
+                        <div onclick="openBottomSheet('13')" id="table-13" class="col-start-9 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">13</div>
+                        </div>
+                        <div onclick="openBottomSheet('14')" id="table-14" class="col-start-10 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">14</div>
+                        </div>
+                        <div onclick="openBottomSheet('15')" id="table-15" class="col-start-11 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">15</div>
+                        </div>
+
+                        <!-- 3. 第三排 (Row 4) -->
+                        <div onclick="openBottomSheet('27')" id="table-27" class="col-start-1 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">27</div>
+                        </div>
+                        <div onclick="openBottomSheet('28')" id="table-28" class="col-start-2 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">28</div>
+                        </div>
+                        <div onclick="openBottomSheet('29')" id="table-29" class="col-start-3 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">29</div>
+                        </div>
+
+                        <div class="col-start-4 flex items-center justify-center"><div class="w-4 h-4 bg-[#b5b5ba] rounded-sm"></div></div>
+
+                        <div onclick="openBottomSheet('4')" id="table-4" class="col-start-5 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">4</div>
+                        </div>
+                        
+                        <div onclick="openBottomSheet('5')" id="table-5" class="col-start-7 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">5</div>
+                        </div>
+
+                        <div class="col-start-8 flex items-center justify-center"><div class="w-4 h-4 bg-[#b5b5ba] rounded-sm"></div></div>
+
+                        <div onclick="openBottomSheet('16')" id="table-16" class="col-start-9 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">16</div>
+                        </div>
+                        <div onclick="openBottomSheet('17')" id="table-17" class="col-start-10 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">17</div>
+                        </div>
+                        <div onclick="openBottomSheet('18')" id="table-18" class="col-start-11 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">18</div>
+                        </div>
+
+                        <!-- 4. 第四排 (Row 5) -->
+                        <div onclick="openBottomSheet('30')" id="table-30" class="col-start-2 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">30</div>
+                        </div>
+                        <div onclick="openBottomSheet('31')" id="table-31" class="col-start-3 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">31</div>
+                        </div>
+
+                        <div onclick="openBottomSheet('6')" id="table-6" class="col-start-5 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">6</div>
+                        </div>
+                        
+                        <div onclick="openBottomSheet('7')" id="table-7" class="col-start-7 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">7</div>
+                        </div>
+
+                        <div onclick="openBottomSheet('19')" id="table-19" class="col-start-9 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">19</div>
+                        </div>
+                        <div onclick="openBottomSheet('20')" id="table-20" class="col-start-10 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">20</div>
+                        </div>
+
+                        <!-- 5. 第五排 (Row 6 - 底排) -->
+                        <div onclick="openBottomSheet('8')" id="table-8" class="col-start-5 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">8</div>
+                        </div>
+                        
+                        <div class="col-start-6 flex flex-col items-center justify-center text-red-600">
+                            <i class="fa-solid fa-arrow-up text-xl animate-bounce"></i>
+                            <span class="text-[9px] font-black tracking-widest mt-0.5">入口</span>
+                        </div>
+
+                        <div onclick="openBottomSheet('9')" id="table-9" class="col-start-7 flex justify-center relative">
+                            <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">9</div>
+                        </div>
+
                     </div>
 
-                    <!-- 2. 第二排 (Row 3):
-                         Left: [24, 25, 26] | Inner Left: [3] | Center [Empty] | Inner Right: [2] | Right [13, 14, 15] -->
-                    <div onclick="openBottomSheet('24')" id="table-24" class="col-start-1 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">24</div>
-                    </div>
-                    <div onclick="openBottomSheet('25')" id="table-25" class="col-start-2 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">25</div>
-                    </div>
-                    <div onclick="openBottomSheet('26')" id="table-26" class="col-start-3 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">26</div>
-                    </div>
-
-                    <div onclick="openBottomSheet('3')" id="table-3" class="col-start-5 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">3</div>
-                    </div>
-                    
-                    <div onclick="openBottomSheet('2')" id="table-2" class="col-start-7 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">2</div>
-                    </div>
-
-                    <div onclick="openBottomSheet('13')" id="table-13" class="col-start-9 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">13</div>
-                    </div>
-                    <div onclick="openBottomSheet('14')" id="table-14" class="col-start-10 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">14</div>
-                    </div>
-                    <div onclick="openBottomSheet('15')" id="table-15" class="col-start-11 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">15</div>
-                    </div>
-
-                    <!-- 3. 第三排 (Row 4):
-                         Left: [27, 28, 29] | Inner Left: [4] | Center [Empty] | Inner Right: [5] | Right [16, 17, 18] -->
-                    <div onclick="openBottomSheet('27')" id="table-27" class="col-start-1 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">27</div>
-                    </div>
-                    <div onclick="openBottomSheet('28')" id="table-28" class="col-start-2 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">28</div>
-                    </div>
-                    <div onclick="openBottomSheet('29')" id="table-29" class="col-start-3 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">29</div>
-                    </div>
-
-                    <div class="col-start-4 flex items-center justify-center"><div class="w-4 h-4 bg-[#b5b5ba] rounded-sm"></div></div>
-
-                    <div onclick="openBottomSheet('4')" id="table-4" class="col-start-5 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">4</div>
-                    </div>
-                    
-                    <div onclick="openBottomSheet('5')" id="table-5" class="col-start-7 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">5</div>
-                    </div>
-
-                    <div class="col-start-8 flex items-center justify-center"><div class="w-4 h-4 bg-[#b5b5ba] rounded-sm"></div></div>
-
-                    <div onclick="openBottomSheet('16')" id="table-16" class="col-start-9 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">16</div>
-                    </div>
-                    <div onclick="openBottomSheet('17')" id="table-17" class="col-start-10 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">17</div>
-                    </div>
-                    <div onclick="openBottomSheet('18')" id="table-18" class="col-start-11 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">18</div>
-                    </div>
-
-                    <!-- 4. 第四排 (Row 5):
-                         Left: [Empty, 30, 31] | Inner Left: [6] | Center [Empty] | Inner Right: [7] | Right [19, 20, Empty] -->
-                    <div onclick="openBottomSheet('30')" id="table-30" class="col-start-2 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">30</div>
-                    </div>
-                    <div onclick="openBottomSheet('31')" id="table-31" class="col-start-3 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">31</div>
-                    </div>
-
-                    <div onclick="openBottomSheet('6')" id="table-6" class="col-start-5 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">6</div>
-                    </div>
-                    
-                    <div onclick="openBottomSheet('7')" id="table-7" class="col-start-7 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">7</div>
-                    </div>
-
-                    <div onclick="openBottomSheet('19')" id="table-19" class="col-start-9 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">19</div>
-                    </div>
-                    <div onclick="openBottomSheet('20')" id="table-20" class="col-start-10 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">20</div>
-                    </div>
-
-                    <!-- 5. 第五排 (Row 6 - 底排):
-                         Left: [Empty] | Inner Left: [8] | Center [Arrow] | Inner Right: [9] | Right [Empty] -->
-                    <div onclick="openBottomSheet('8')" id="table-8" class="col-start-5 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">8</div>
-                    </div>
-                    
-                    <div class="col-start-6 flex flex-col items-center justify-center text-red-600">
-                        <i class="fa-solid fa-arrow-up text-xl animate-bounce"></i>
-                        <span class="text-[9px] font-black tracking-widest mt-0.5">入口</span>
-                    </div>
-
-                    <div onclick="openBottomSheet('9')" id="table-9" class="col-start-7 flex justify-center relative">
-                        <div class="w-12 h-12 rounded-full border-[3px] border-[#222] bg-white flex items-center justify-center font-black text-slate-800 text-sm shadow-sm cursor-pointer active:scale-90 transition relative">9</div>
+                    <!-- 門與接引線裝飾 -->
+                    <div class="w-full flex justify-between mt-8 pt-4 border-t border-dashed border-slate-300 px-2">
+                        <div class="text-[10px] text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-restroom"></i> 洗手間方向</div>
+                        <div class="text-[10px] text-slate-400 flex items-center gap-1.5">接待處 <i class="fa-solid fa-door-open"></i></div>
                     </div>
 
                 </div>
-
-                <!-- 門與接引線裝飾 (最下方) -->
-                <div class="w-full flex justify-between mt-8 pt-4 border-t border-dashed border-slate-300 px-2">
-                    <div class="text-[10px] text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-restroom"></i> 洗手間方向</div>
-                    <div class="text-[10px] text-slate-400 flex items-center gap-1.5">接待處 <i class="fa-solid fa-door-open"></i></div>
-                </div>
-
             </div>
-        </div>
 
-        <!-- 📊 現場宴客出席狀況儀表板 -->
-        <div class="w-full max-w-sm bg-white rounded-3xl border border-slate-200 p-5 shadow-sm mt-2">
-            <h2 class="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
-                <i class="fa-solid fa-chart-pie text-[#8c1c1c]"></i>
-                <span>現場賓客入席進度</span>
-            </h2>
-            
-            <div class="space-y-4">
-                <!-- 賓客出席比例 -->
+            <!-- 現場宴客出席狀況儀表板 -->
+            <div class="w-full max-w-sm bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+                <h2 class="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-chart-pie text-burgundy-700"></i>
+                    <span>現場賓客入席進度</span>
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center text-xs mb-1.5">
+                            <span class="text-slate-500 font-medium">已到場賓客比例</span>
+                            <span id="statsArrivedCount" class="font-bold text-slate-800">0 / 0 人</span>
+                            <span id="statsArrivedPercent" class="font-black text-burgundy-700 bg-red-50 px-2 py-0.5 rounded-full text-[10px]">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div id="statsGuestProgressBar" class="bg-burgundy-700 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center text-xs mb-1.5">
+                            <span class="text-slate-500 font-medium">已入座桌數</span>
+                            <span id="statsOccupiedTables" class="font-bold text-slate-800">0 / 0 桌</span>
+                            <span id="statsTablePercent" class="font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px]">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div id="statsTableProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="feastIndicatorBanner" class="transition-all duration-300">
+                    <!-- 動態注入開飯推薦狀態 -->
+                </div>
+            </div>
+
+            <!-- 總召應變與預備位調度專區 -->
+            <div class="w-full max-w-sm bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+                <h2 class="text-sm font-black text-slate-800 flex items-center gap-2 mb-3">
+                    <i class="fa-solid fa-clipboard-list text-burgundy-700"></i>
+                    <span>總召應變與預備位調度</span>
+                </h2>
+                
+                <!-- 重要應變提醒 -->
+                <div class="bg-red-50 border border-red-100 rounded-2xl p-3 text-[11px] text-red-800 leading-relaxed mb-4 space-y-2">
+                    <div class="flex gap-2 items-start">
+                        <i class="fa-solid fa-triangle-exclamation text-red-600 mt-0.5 shrink-0"></i>
+                        <div>
+                            <strong class="font-bold block text-red-900 mb-0.5">臨時排座守則：</strong>
+                            若臨時賓客被排入非預備位的桌次，<span class="underline font-bold">該桌將無法加菜</span>（此桌會少一份餐點）。請招待同工務必優先安排至下方設有預備位的桌次！
+                        </div>
+                    </div>
+                    <div class="flex gap-2 items-start border-t border-red-200/60 pt-2">
+                        <i class="fa-solid fa-user-lock text-red-600 mt-0.5 shrink-0"></i>
+                        <div>
+                            <strong class="font-bold block text-red-900 mb-0.5">第 10、11、12 桌預備位限制：</strong>
+                            此三桌雖各設有 1 個預備位，但<span class="underline font-bold">僅限郁翔同事及長官</span>，請招待同工特別注意。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 預備位列表 -->
+                <div class="space-y-2">
+                    <p class="text-[11px] text-slate-400 font-bold">點擊下方預備位即可在地圖上定位與查看：</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div onclick="highlightAndScrollToTable('5'); openBottomSheet('5')" class="p-2.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-red-50 hover:border-red-200 transition text-left cursor-pointer active:scale-95">
+                            <span class="block text-[10px] text-slate-400 font-bold">第 5 桌</span>
+                            <span class="text-xs font-black text-slate-700">預備位 1</span>
+                        </div>
+                        <div onclick="highlightAndScrollToTable('6'); openBottomSheet('6')" class="p-2.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-red-50 hover:border-red-200 transition text-left cursor-pointer active:scale-95">
+                            <span class="block text-[10px] text-slate-400 font-bold">第 6 桌</span>
+                            <span class="text-xs font-black text-slate-700">預備位 2</span>
+                        </div>
+                        <div onclick="highlightAndScrollToTable('7'); openBottomSheet('7')" class="p-2.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-red-50 hover:border-red-200 transition text-left cursor-pointer active:scale-95">
+                            <span class="block text-[10px] text-slate-400 font-bold">第 7 桌</span>
+                            <span class="text-xs font-black text-slate-700">預備位 3</span>
+                        </div>
+                        <div onclick="highlightAndScrollToTable('15'); openBottomSheet('15')" class="p-2.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-red-50 hover:border-red-200 transition text-left cursor-pointer active:scale-95">
+                            <span class="block text-[10px] text-slate-400 font-bold">第 15 桌</span>
+                            <span class="text-xs font-black text-slate-700">預備位 4</span>
+                        </div>
+                        <div onclick="highlightAndScrollToTable('17'); openBottomSheet('17')" class="p-2.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-red-50 hover:border-red-200 transition text-left cursor-pointer active:scale-95 col-span-2">
+                            <span class="block text-[10px] text-slate-400 font-bold">第 17 桌</span>
+                            <span class="text-xs font-black text-slate-700">預備位 5、6、7</span>
+                        </div>
+                        <div onclick="highlightAndScrollToTable('20'); openBottomSheet('20')" class="p-2.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-red-50 hover:border-red-200 transition text-left cursor-pointer active:scale-95 col-span-2">
+                            <span class="block text-[10px] text-slate-400 font-bold">第 20 桌</span>
+                            <span class="text-xs font-black text-slate-700">預備位 8、9</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 喜餅發放區 ==================== -->
+        <section id="sectionCakes" class="w-full max-w-md flex flex-col gap-4 hidden">
+            <!-- 喜餅發放進度儀表板 -->
+            <div class="w-full bg-white rounded-3xl border border-rose-100 p-5 shadow-sm">
+                <h2 class="text-sm font-black text-roseGold-700 flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>喜餅發放即時盤點</span>
+                </h2>
+                
+                <div class="grid grid-cols-3 gap-2 text-center mb-4">
+                    <div class="bg-rose-50/50 p-2.5 rounded-2xl border border-rose-100/40">
+                        <p class="text-[10px] text-slate-400 font-medium">應發總數</p>
+                        <p id="statsTotalCakes" class="text-lg font-black text-slate-800">0</p>
+                    </div>
+                    <div class="bg-emerald-50/40 p-2.5 rounded-2xl border border-emerald-100/30">
+                        <p class="text-[10px] text-emerald-600 font-medium">已領喜餅</p>
+                        <p id="statsDeliveredCakes" class="text-lg font-black text-emerald-700">0</p>
+                    </div>
+                    <div class="bg-roseGold-50/50 p-2.5 rounded-2xl border border-roseGold-100/30">
+                        <p class="text-[10px] text-roseGold-500 font-medium">剩餘未領</p>
+                        <p id="statsRemainingCakes" class="text-lg font-black text-roseGold-700">0</p>
+                    </div>
+                </div>
+
                 <div>
                     <div class="flex justify-between items-center text-xs mb-1.5">
-                        <span class="text-slate-500 font-medium">已到場賓客比例</span>
-                        <span id="statsArrivedCount" class="font-bold text-slate-800">0 / 0 人</span>
-                        <span id="statsArrivedPercent" class="font-black text-[#8c1c1c] bg-red-50 px-2 py-0.5 rounded-full text-[10px]">0%</span>
+                        <span class="text-slate-500 font-medium">發放進度</span>
+                        <span id="statsCakePercent" class="font-black text-roseGold-700">0%</span>
                     </div>
                     <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div id="statsGuestProgressBar" class="bg-[#8c1c1c] h-full rounded-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <!-- 已入席桌數比例 -->
-                <div>
-                    <div class="flex justify-between items-center text-xs mb-1.5">
-                        <span class="text-slate-500 font-medium">已入座桌數 (只要該桌有人簽到即算)</span>
-                        <span id="statsOccupiedTables" class="font-bold text-slate-800">0 / 0 桌</span>
-                        <span id="statsTablePercent" class="font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px]">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div id="statsTableProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        <div id="statsCakeProgressBar" class="bg-gradient-to-r from-roseGold-500 to-roseGold-700 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- 開飯推薦指標提示條 (達 70% 出席率即觸發金色光輝警示) -->
-            <div id="feastIndicatorBanner" class="transition-all duration-300">
-                <!-- 動態注入開飯推薦狀態 -->
+            <!-- 喜餅名單 -->
+            <div class="w-full bg-white rounded-3xl border border-rose-100 p-4 shadow-sm flex flex-col gap-3">
+                <div class="flex justify-between items-center px-1">
+                    <h2 class="text-sm font-black text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-list text-roseGold-500"></i>
+                        <span>喜餅領取清單</span>
+                    </h2>
+                    <select id="filterSelect" onchange="renderCakeList()" class="text-xs bg-slate-100 border-none rounded-full px-3 py-1.5 font-semibold text-slate-600 focus:outline-none">
+                        <option value="all">顯示全部</option>
+                        <option value="undelivered">僅顯示未領取</option>
+                        <option value="delivered">僅顯示已領取</option>
+                    </select>
+                </div>
+
+                <div id="cakeGuestList" class="flex flex-col gap-2 max-h-[50vh] overflow-y-auto no-scrollbar pr-1">
+                    <!-- JavaScript 動態注入 -->
+                </div>
             </div>
-        </div>
-        
+        </section>
+
         <!-- 備註說明 -->
-        <p class="text-[10px] text-slate-400 mt-4 text-center">※ 此為現場擺設示意圖，實際依現場擺放為主</p>
+        <p class="text-[10px] text-slate-400 mt-4 text-center">※ 本網頁資料多機即時連線同步，請工作人員安心使用</p>
     </main>
 
-    <!-- 賓客名單底層滑出面板 -->
+    <!-- 賓客名單底層滑出面板 (桌次賓客專用) -->
     <div id="bottomSheet" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-300 rounded-t-[1.8rem] shadow-[0_-10px_30px_rgba(0,0,0,0.15)] z-50 bottom-sheet max-h-[80vh] flex flex-col">
-        <!-- 面板把手與頂部 -->
         <div class="w-full flex justify-between items-center px-6 py-4 border-b border-slate-100">
             <div class="flex items-center gap-3">
-                <span id="drawerTableIcon" class="w-10 h-10 rounded-full bg-[#8c1c1c] text-white flex items-center justify-center font-black text-base">
+                <span id="drawerTableIcon" class="w-10 h-10 rounded-full bg-burgundy-700 text-white flex items-center justify-center font-black text-base">
                     M
                 </span>
                 <div>
                     <h2 id="drawerTitle" class="text-base font-bold text-slate-800">主桌</h2>
-                    <p class="text-xs text-slate-500">賓客完整名單 (點擊卡片即可勾選/取消報到)</p>
+                    <p class="text-xs text-slate-500">賓客完整名單 (點擊即可進行報到)</p>
                 </div>
             </div>
             <button onclick="closeBottomSheet()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
@@ -340,7 +474,6 @@
             </button>
         </div>
 
-        <!-- 名單內容滾動區域 -->
         <div class="flex-1 overflow-y-auto px-6 py-4 bg-slate-50">
             <div id="drawerGuestList" class="grid grid-cols-2 gap-2 pb-6">
                 <!-- 賓客資料將透過 Javascript 動態注入 -->
@@ -351,67 +484,67 @@
     <!-- 遮罩背景 -->
     <div id="backdrop" onclick="closeBottomSheet()" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-200"></div>
 
-    <!-- ⚙️ 系統與同步設定彈出視窗 -->
+    <!-- 系統一站式整合設定彈出視窗 (隱藏款) -->
     <div id="settingsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-        <!-- 遮罩背景 -->
         <div onclick="closeSettingsModal()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-        <!-- 視窗主體 -->
-        <div class="bg-white rounded-[2rem] shadow-2xl max-w-md w-full p-6 relative z-10 border border-slate-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
-            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+        <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-6 relative z-10 border border-slate-100 flex flex-col gap-4">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-50">
                 <h3 class="text-base font-black text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-[#8c1c1c]"></i>
-                    <span>系統與同步設定</span>
+                    <i class="fa-solid fa-sliders text-burgundy-700"></i>
+                    <span>系統與同步設定中心</span>
                 </h3>
+                <span id="settingsSyncStatus" class="text-[10px] px-2 py-0.5 rounded-full"></span>
                 <button onclick="closeSettingsModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
             
-            <!-- 狀態顯示 -->
-            <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 text-xs space-y-1.5">
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-medium">目前的資料連線狀態：</span>
-                    <span id="settingsSyncStatus" class="font-bold px-2 py-0.5 rounded-full">檢查中...</span>
-                </div>
-                <p class="text-[10px] text-slate-400 leading-relaxed">提示：此頁面已自動綁定妳的 Realtime Database。連按頂部紅色標題 5 下即可再次打開此視窗！</p>
-            </div>
+            <p class="text-[10px] text-slate-400 leading-relaxed">提示：此設定會同時套用到「桌位圖」與「喜餅系統」，請在所有工作人員手機上填寫相同的連線資料！</p>
 
             <!-- 試算表設定 -->
             <div class="space-y-1.5">
                 <label class="block text-xs font-bold text-slate-700">Google 試算表 ID</label>
-                <input type="text" id="settingSheetId" placeholder="輸入 11nPoCdi... 等試算表 ID" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400">
+                <input type="text" id="settingSheetId" placeholder="輸入 11nPoCdi... 等試算表 ID" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-burgundy-500">
             </div>
 
-            <!-- Firebase 雲端網址設定 (現在只要貼一行 URL，預設已填好妳的資料庫) -->
+            <!-- Firebase 網址設定 -->
             <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-slate-700 flex justify-between items-center">
-                    <span>自訂 Firebase Realtime DB URL</span>
-                </label>
-                <input type="text" id="settingFirebaseUrl" placeholder="https://[你的專案ID].firebasedatabase.app/" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-400">
+                <label class="block text-xs font-bold text-slate-700">Firebase Realtime DB URL</label>
+                <input type="text" id="settingFirebaseUrl" placeholder="https://[你的專案ID].firebasedatabase.app/" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-burgundy-500">
             </div>
 
-            <!-- 按鈕區 -->
-            <div class="flex gap-2 pt-2">
+            <div class="flex gap-2 pt-1">
                 <button onclick="resetSettings()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold py-2.5 rounded-xl transition">
                     恢復預設
                 </button>
-                <button onclick="saveSettings()" class="flex-1 bg-[#8c1c1c] hover:bg-[#721616] text-white text-xs font-bold py-2.5 rounded-xl transition shadow-md">
+                <button onclick="saveSettings()" class="flex-1 bg-burgundy-700 hover:bg-burgundy-800 text-white text-xs font-bold py-2.5 rounded-xl transition shadow-md">
                     儲存並重啟
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- ⚡️ 免 SDK 即時自動連動邏輯 -->
+    <!-- 免 SDK 整合雲端秒級雙向同步核心邏輯 -->
     <script>
-        // 從 LocalStorage 恢復打勾紀錄
-        const localCache = localStorage.getItem('checkedInGuests_wedding');
-        window.checkedInGuests = new Set(localCache ? JSON.parse(localCache) : []);
-        window.activeTableId = null;
+        // 安全處理 Key 的常規化函式
+        function normalizeKey(key) {
+            if (key === null || key === undefined) return '';
+            return String(key).trim();
+        }
 
-        // 🎯 自動指向妳剛剛申請的「新加坡 Realtime Database」！
+        // 1. 本地狀態快取初始化
+        const checkedInGuestsCache = localStorage.getItem('checkedInGuests_wedding');
+        window.checkedInGuests = new Set(checkedInGuestsCache ? JSON.parse(checkedInGuestsCache) : []);
+
+        const checkedInCakesCache = localStorage.getItem('checkedInCakes_wedding');
+        window.checkedInCakes = new Map(checkedInCakesCache ? JSON.parse(checkedInCakesCache) : []);
+
+        window.activeTableId = null;
+        let currentTab = 'seating'; // 'seating' 或 'cakes'
+        let currentHighlightedTableId = null;
+
+        // 預設連入的 Firebase Realtime Database
         const DEFAULT_DB_URL = "https://weddingseat-41c0b-default-rtdb.asia-southeast1.firebasedatabase.app/";
-        
         let activeDbUrl = localStorage.getItem('custom_db_url') || DEFAULT_DB_URL;
         if (!activeDbUrl.endsWith('/')) {
             activeDbUrl += '/';
@@ -419,51 +552,64 @@
 
         let eventSource = null;
 
-        // 1. 本地與雲端雙向秒級同步
+        // 2. 超高效單一連接 SSE 監聽：同時同步桌位（checkins）與喜餅（cakes）
         function initRealtimeSync() {
             const syncIndicator = document.getElementById('syncIndicator');
-            
-            if (eventSource) {
-                eventSource.close();
-            }
+            if (eventSource) eventSource.close();
 
-            // 指向 checkins 節點的 json API
-            const sseUrl = `${activeDbUrl}checkins.json`;
+            // 監聽資料庫根目錄變動，一次同步兩個系統！
+            const sseUrl = `${activeDbUrl}.json`;
             
             try {
                 eventSource = new EventSource(sseUrl);
 
-                // 當雲端資料有變更，秒級觸發
                 eventSource.addEventListener('put', (event) => {
                     const response = JSON.parse(event.data);
                     const path = response.path;
                     const data = response.data;
 
                     if (path === "/") {
-                        // 初始連線：同步所有雲端打勾紀錄
+                        // 初始完整連線：更新所有資料
                         window.checkedInGuests.clear();
+                        window.checkedInCakes.clear();
                         if (data) {
-                            Object.keys(data).forEach(key => {
-                                window.checkedInGuests.add(key);
-                            });
+                            if (data.checkins) {
+                                Object.keys(data.checkins).forEach(k => window.checkedInGuests.add(k));
+                            }
+                            if (data.cakes) {
+                                Object.keys(data.cakes).forEach(k => window.checkedInCakes.set(k, data.cakes[k]));
+                            }
                         }
-                    } else {
-                        // 單一更新：路徑為 "/[賓客Key]"
-                        const guestKey = path.substring(1);
-                        if (data === null) {
-                            window.checkedInGuests.delete(guestKey);
-                        } else {
-                            window.checkedInGuests.add(guestKey);
+                    } else if (path.startsWith("/checkins")) {
+                        // 桌位變更
+                        const parts = path.split('/');
+                        const guestKey = parts[2];
+                        if (guestKey) {
+                            if (data === null) window.checkedInGuests.delete(guestKey);
+                            else window.checkedInGuests.add(guestKey);
+                        }
+                    } else if (path.startsWith("/cakes")) {
+                        // 喜餅變更
+                        const parts = path.split('/');
+                        const guestKey = parts[2];
+                        if (guestKey) {
+                            if (data === null) window.checkedInCakes.delete(guestKey);
+                            else window.checkedInCakes.set(guestKey, data);
                         }
                     }
 
-                    // 備份到本地 LocalStorage 防關網頁，並重新繪製 UI
+                    // 保存至本地快取
                     localStorage.setItem('checkedInGuests_wedding', JSON.stringify([...window.checkedInGuests]));
+                    localStorage.setItem('checkedInCakes_wedding', JSON.stringify([...window.checkedInCakes]));
+
+                    // 更新 UI 畫面
                     if (window.activeTableId) {
                         window.renderGuestListUI(window.activeTableId);
                     }
+                    window.renderCakeList();
                     window.updateMapTableStatus();
                     window.updateAttendanceDashboard();
+                    window.updateCakeDashboard();
 
                     syncIndicator.innerHTML = `
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -471,7 +617,6 @@
                     `;
                 });
 
-                // 當雲端有局部 Patch 時觸發
                 eventSource.addEventListener('patch', (event) => {
                     const response = JSON.parse(event.data);
                     const path = response.path;
@@ -479,33 +624,42 @@
 
                     if (path === "/") {
                         if (data) {
-                            Object.keys(data).forEach(key => {
-                                if (data[key] === null) {
-                                    window.checkedInGuests.delete(key);
-                                } else {
-                                    window.checkedInGuests.add(key);
-                                }
-                            });
+                            if (data.checkins) {
+                                Object.keys(data.checkins).forEach(k => {
+                                    if (data.checkins[k] === null) window.checkedInGuests.delete(k);
+                                    else window.checkedInGuests.add(k);
+                                });
+                            }
+                            if (data.cakes) {
+                                Object.keys(data.cakes).forEach(k => {
+                                    if (data.cakes[k] === null) window.checkedInCakes.delete(k);
+                                    else window.checkedInCakes.set(k, data.cakes[k]);
+                                });
+                            }
                         }
                     }
 
                     localStorage.setItem('checkedInGuests_wedding', JSON.stringify([...window.checkedInGuests]));
+                    localStorage.setItem('checkedInCakes_wedding', JSON.stringify([...window.checkedInCakes]));
+
                     if (window.activeTableId) {
                         window.renderGuestListUI(window.activeTableId);
                     }
+                    window.renderCakeList();
                     window.updateMapTableStatus();
                     window.updateAttendanceDashboard();
+                    window.updateCakeDashboard();
                 });
 
                 eventSource.onerror = () => {
                     syncIndicator.innerHTML = `
                         <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                        線路重新連線中
+                        連線重試中
                     `;
                 };
 
             } catch (err) {
-                console.error("即時連線建立失敗，切換為本地模式:", err);
+                console.error("同步建立失敗，進入本地保存模式:", err);
                 syncIndicator.innerHTML = `
                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                     本地保存模式
@@ -513,12 +667,11 @@
             }
         }
 
-        // 2. 本地切換打勾狀態，並立即發送 REST API 覆蓋雲端
+        // 3. 桌位點擊報到 API 連動
         window.toggleCheckIn = async function(tableId, guestName) {
             const guestKey = getGuestKeyLocal(tableId, guestName);
             let isNowCheckedIn = false;
 
-            // A. 本地極速切換 (不等待網速，瞬間反應)
             if (window.checkedInGuests.has(guestKey)) {
                 window.checkedInGuests.delete(guestKey);
             } else {
@@ -528,14 +681,12 @@
 
             localStorage.setItem('checkedInGuests_wedding', JSON.stringify([...window.checkedInGuests]));
 
-            // B. 立即繪製畫面
             if (window.activeTableId) {
                 window.renderGuestListUI(window.activeTableId);
             }
             window.updateMapTableStatus();
             window.updateAttendanceDashboard();
 
-            // C. 背地裡異步打 API 更新 Realtime DB (完全不需要登入驗證、直接操作)
             const endpoint = `${activeDbUrl}checkins/${guestKey}.json`;
             try {
                 if (!isNowCheckedIn) {
@@ -552,18 +703,93 @@
                     });
                 }
             } catch (err) {
-                console.error("同步至雲端失敗:", err);
+                console.error("桌位雲端連線失敗:", err);
             }
         };
 
-        // 🎯 隱藏設定呼叫機制：連按 5 下頂部標題解鎖設定
+        // 4. 喜餅點擊直接切換領取狀態（無彈窗、無確認、直覺勾選）
+        window.handleCakeClick = async function(guestName, cakeType, isChecked) {
+            const guestKey = guestName.trim().replace(/[\s\(\)（）\+]/g, '_');
+            
+            if (isChecked) {
+                // 取消領取
+                window.checkedInCakes.delete(guestKey);
+                localStorage.setItem('checkedInCakes_wedding', JSON.stringify([...window.checkedInCakes]));
+                
+                window.renderCakeList();
+                window.updateCakeDashboard();
+                
+                const endpoint = `${activeDbUrl}cakes/${guestKey}.json`;
+                try {
+                    await fetch(endpoint, { method: 'DELETE' });
+                } catch (err) {
+                    console.error("喜餅雲端刪除失敗:", err);
+                }
+            } else {
+                // 確認領取（直接標記）
+                const record = {
+                    guestName: guestName,
+                    cakeType: cakeType,
+                    proxy: '本人領取',
+                    deliveredAt: Date.now()
+                };
+
+                window.checkedInCakes.set(guestKey, record);
+                localStorage.setItem('checkedInCakes_wedding', JSON.stringify([...window.checkedInCakes]));
+
+                window.renderCakeList();
+                window.updateCakeDashboard();
+
+                const endpoint = `${activeDbUrl}cakes/${guestKey}.json`;
+                try {
+                    await fetch(endpoint, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(record)
+                    });
+                } catch (err) {
+                    console.error("喜餅雲端更新失敗:", err);
+                }
+            }
+        };
+
+        // 5. 雙系統 Tab 切換控制器
+        window.switchTab = function(tabName) {
+            currentTab = tabName;
+            const btnSeating = document.getElementById('tabBtnSeating');
+            const btnCakes = document.getElementById('tabBtnCakes');
+            const secSeating = document.getElementById('sectionSeating');
+            const secCakes = document.getElementById('sectionCakes');
+            const searchInput = document.getElementById('searchInput');
+
+            // 調整導覽列與主題色調
+            if (tabName === 'seating') {
+                btnSeating.className = "py-2 text-xs font-black rounded-full flex items-center justify-center gap-1.5 transition-all duration-300 bg-white text-burgundy-800 shadow-md";
+                btnCakes.className = "py-2 text-xs font-bold rounded-full flex items-center justify-center gap-1.5 transition-all duration-300 text-burgundy-200 hover:text-white";
+                secSeating.classList.remove('hidden');
+                secCakes.classList.add('hidden');
+                searchInput.placeholder = "輸入賓客姓名尋找桌次...";
+                document.getElementById('headerIcon').className = "fa-solid fa-hotel text-amber-300 text-lg animate-pulse";
+                document.getElementById('headerSubtitle').innerText = "彭園 BCD 廳 整合管理";
+            } else {
+                btnCakes.className = "py-2 text-xs font-black rounded-full flex items-center justify-center gap-1.5 transition-all duration-300 bg-white text-rose-800 shadow-md";
+                btnSeating.className = "py-2 text-xs font-bold rounded-full flex items-center justify-center gap-1.5 transition-all duration-300 text-burgundy-200 hover:text-white";
+                secCakes.classList.remove('hidden');
+                secSeating.classList.add('hidden');
+                searchInput.placeholder = "輸入賓客姓名查詢喜餅與領取狀態...";
+                document.getElementById('headerIcon').className = "fa-solid fa-gift text-pink-200 text-lg animate-pulse";
+                document.getElementById('headerSubtitle').innerText = "婚宴喜餅發放與領取管理";
+            }
+            clearSearch();
+        };
+
+        // 隱藏設定解鎖：連按標題 5 下解鎖設定
         let secretClickCount = 0;
         let secretClickTimer = null;
         window.handleSecretClick = function() {
             secretClickCount++;
             if (secretClickTimer) clearTimeout(secretClickTimer);
             
-            // 2 秒內沒按完就重設計數器
             secretClickTimer = setTimeout(() => {
                 secretClickCount = 0;
             }, 2000);
@@ -575,7 +801,7 @@
             }
         };
 
-        // 3. 初始執行連動
+        // 初始化
         window.addEventListener('DOMContentLoaded', () => {
             initRealtimeSync();
         });
@@ -583,15 +809,15 @@
 
     <!-- 賓客名單資料庫與操作邏輯 -->
     <script>
-        // 完全符合雲端 Excel 最新精確名單 (本地備援快取)
+        // 完全符合雲端 Excel 最新精確桌次名單 (本地預設備援)
         const seatingData = {
-            "主桌": ["蘇郁翔", "蔣瑀", "男方媽媽", "女方媽媽", "郁翔爺爺", "郁翔大伯", "王文章", "王文杰", "蔣瑀大舅舅", "蔣瑀二舅舅", "蔣瑀大伯（素）", "堂哥（素）"],
+            "主桌": ["蘇郁翔", "蔣瑀", "男方媽媽", "女方媽媽", "郁翔爺爺", "郁翔大伯", "王文章", "王文杰", "吳兆洸", "吳兆芳", "蔣義斌（素）", "蔣侃學（素）"],
             "2": ["郁翔外公", "郁翔外婆", "王筱晴", "王筱晴", "張麗梅", "張孝毅", "張家銘", "王冠淑", "王甫丞", "王甫丞女友"],
-            "3": ["鄭玉琴", "王曼敏", "劉建祥", "劉建祥", "小舅舅", "小舅媽", "吳宗諦", "吳宗諦", "葉永盛", "蘇育俞"],
+            "3": ["鄭玉琴", "王曼敏", "劉建祥", "劉建祥", "吳兆恢", "蓓英", "吳宗諦", "吳宗諦", "葉永盛", "蘇育俞"],
             "4": ["言兆芬", "王之瑋", "廖三利", "呂元虹", "嫚玲姐", "Peggy", "Rose鄒開蓮", "曹琬琦"],
-            "5": ["吳品萱", "秉信", "葉守真", "葉守慈", "葉守敬", "王英婷", "玉華牧師", "黃安國", "樊子僑"],
-            "6": ["周哲緯", "李軒萍", "陳炯翰", "莊寶琳", "詹文仁", "李念蒨", "詹小寶", "翁林甫", "賴品妤"],
-            "7": ["吳厚儒", "張峻維", "李貞慧", "張雅評", "陳仕匯", "張彥瑋", "蔡心博", "張惠之"],
+            "5": ["吳品萱", "秉信", "葉守真", "葉守慈", "葉守敬", "王英婷", "玉華牧師", "黃安國", "樊子僑", "預備位1"],
+            "6": ["周哲緯", "李軒萍", "陳炯翰", "莊寶琳", "詹文仁", "李念蒨", "詹小寶", "翁林甫", "賴品妤", "預備位2"],
+            "7": ["吳厚儒", "張峻維", "張峻維", "李貞慧", "張雅評", "陳仕匯", "張彥瑋", "蔡心博", "張惠之", "預備位3"],
             "8": ["吳曉君", "張雅菁", "陳小包", "黃品佳", "施雅林", "吳佳勳", "郭品君", "許乃文", "春曉", "陳愛婷"],
             "9": ["楊宗翰", "林瑞哲", "林瑞哲", "劉士丕", "劉士丕", "林廷諭", "張家綱", "王智勝", "王智勝女友", "蘇渝玲"],
             "10": ["翁毓澤財務長", "翁毓澤財務長", "徐華梅處長", "范貴華處長", "陳宇祥處長", "連植誠經理", "吳俊霖經理", "王美幸經理", "王美靜"],
@@ -599,86 +825,235 @@
             "12": ["詹文慶經理", "林之丘經理", "古曜瑋經理", "邱鋕銘經理", "賴禹滔", "林怡伸", "張仕達", "沈晉仕", "沈晉仕"],
             "13": ["正翔哥", "自然哥", "路得姐", "張天財", "寧謙", "徐大皓", "郭家蓉", "藍義信", "藍爸", "藍媽"],
             "14": ["謝慶雅", "炫凱", "謝振泉", "麗雲", "謝慶瑜", "盛宏", "許宸", "黃寧瑤", "許茜", "美戀", "翟祖欣"],
-            "15": ["樊子郡", "黃丞志", "蔡孟庭", "周信恩", "游雅琇", "楊皓翔", "趙柏凱", "千慈", "強聖芬"],
+            "15": ["樊子郡", "黃丞志", "蔡孟庭", "周信恩", "游雅琇", "楊皓翔", "趙柏凱", "千慈", "強聖芬", "預備位4"],
             "16": ["蔣昀穎", "彭欣鎂", "姜妤庭", "李玉琪", "張乃文", "黃敏怡", "張佩臻", "邱家琦", "邱婕瑀"],
-            "17": ["賴珮吟", "楊孟玟", "張安琪", "張寧君", "劉韋萍", "林筱珊"],
+            "17": ["賴珮吟", "楊孟玟", "張安琪", "張寧君", "劉韋萍", "林宥姗", "預備位5", "預備位6", "預備位7"],
             "18": ["陳曉玫", "莊智堯", "陳雨荷", "莊仲", "林美賢", "林上潔", "王歡", "王歡", "葉靜蓉", "彭祺惠"],
             "19": ["廖盛恩", "許家馨", "蕭加恩", "董信慈", "蘇家萱", "林孟慧", "楊予欣", "徐宛瑜", "施政良", "林箴言"],
-            "20": ["陳德智", "曾法蘭", "陳小曦", "吳子潔", "李旭恩", "李倚寬", "李倚心", "李倚敬"],
+            "20": ["陳德智", "曾法蘭", "陳小曦", "吳子潔", "李旭恩", "李倚寬", "李倚心", "李倚敬", "預備位8", "預備位9"],
             "21": ["梁孟霞", "丁賢二", "林明志", "鍾佳純", "陳俊吉", "趙旭昇", "蔡佩真", "蔡淑宜", "羅一凡", "蔣祖秋"],
             "22": ["陳佳樂", "江成皓", "陳碧珠", "王加恩", "黃姿驊", "劉瀚文", "劉璟萱", "林聖哲", "陳存偉", "莊于萱"],
             "23": ["王品恩", "沈書婷", "林榮祥", "陳奕晏", "陳佳美", "孫仙平", "張白穗", "孫伯勻", "韓松霖", "江禹蓁"],
-            "24": ["李欣芳", "鄭佩儒", "馬意", "徐瑋慧", "侯淑鳳（素）", "蔡惠鈴", "陳品蓉", "開連", "陳桂枝", "高連春"],
+            "24": ["李欣芳", "鄭佩儒", "馬堉慈", "徐瑋慧", "侯淑鳳（素）", "蔡惠鈴", "陳品蓉", "俞蓓華", "陳桂枝", "高連春"],
             "25": ["楊媁婷", "吳琪琦", "陳宇聖", "黃冠霖", "林允中", "丁振新", "陳熙"],
-            "26": ["林鼎言", "陳佳穎", "陳得安", "陳宇凱", "莊亦真", "羅以樂", "羅以欣", "張蓓怡", "黃馨營", "林肯平"],
+            "26": ["林鼎言", "陳佳穎", "陳得安", "陳宇凱", "莊亦真", "羅以樂", "羅以欣", "張蓓怡", "黃馨瑩", "林肯平"],
             "27": ["鄭睦宣", "黃沐恩", "周郁庭", "周書平", "陳婉瑜", "林友翔", "劉加恩", "孫韻嵐", "陳敬庭", "徐子昕"],
             "28": ["陳麒元", "涂惠盈", "陳慕祈", "朱萬方", "閻貴亨", "閻善敏", "閻善真", "閻善恩", "廖峻偉", "李言光"],
-            "29": ["黃愛薇", "康晉嘉", "方艾婷", "劉振興", "胡晏菽", "陳守愚", "嚴吉", "陳義藍", "陳義聆"],
+            "29": ["黃愛薇", "康晉嘉", "方艾婷", "劉振興", "胡晏菽", "陳守愚", "嚴吉", "陳義藍", "陳義聆", "莊傑智"],
             "30": ["徐慧庭", "王筠惠", "黃筠晴", "王博璇", "陸懷恩", "劉語瞳", "葉宣妤", "詹青頤", "蔡悅聆", "周驪讚"],
             "31": ["陳樂祈", "陳有容", "譚筱蓉", "田苡琳", "潘宇希", "莊昕凌", "陳蓓馨", "李函霏", "詹子怡", "蔡佳欣"]
         };
 
+        // 喜餅對應名單
+        const defaultCakeData = [
+            { name: "吳兆洸＆鄭玉琴", type: "喜餅" },
+            { name: "吳兆芳＆王曼敏", type: "喜餅" },
+            { name: "劉建祥", type: "喜餅" },
+            { name: "吳兆恢＆蓓英", type: "喜餅" },
+            { name: "蔣義斌&蔣侃學（素）", type: "素食喜餅" },
+            { name: "葉永盛&蘇育俞", type: "喜餅" },
+            { name: "言兆芬", type: "喜餅" },
+            { name: "王之瑋", type: "喜餅" },
+            { name: "廖三利＆呂元虹", type: "喜餅" },
+            { name: "嫚玲姐", type: "喜餅" },
+            { name: "Peggy", type: "喜餅" },
+            { name: "Rose鄒開蓮", type: "喜餅" },
+            { name: "曹琬琦", type: "喜餅" },
+            { name: "周哲緯＆李軒萍", type: "喜餅" },
+            { name: "陳炯翰", type: "喜餅" },
+            { name: "莊寶琳", type: "喜餅" },
+            { name: "詹文仁＆李念蒨", type: "喜餅" },
+            { name: "翁林甫＆賴品妤", type: "喜餅" },
+            { name: "吳曉君", type: "喜餅" },
+            { name: "張雅菁", type: "喜餅" },
+            { name: "陳小包", type: "喜餅" },
+            { name: "黃品佳", type: "喜餅" },
+            { name: "施雅林", type: "喜餅" },
+            { name: "吳佳勳", type: "喜餅" },
+            { name: "郭品君", type: "喜餅" },
+            { name: "許乃文", type: "喜餅" },
+            { name: "春曉", type: "喜餅" },
+            { name: "陳愛婷", type: "喜餅" },
+            { name: "蔣昀穎", type: "喜餅" },
+            { name: "彭欣鎂", type: "喜餅" },
+            { name: "姜妤庭", type: "喜餅" },
+            { name: "李玉琪", type: "喜餅" },
+            { name: "張乃文", type: "喜餅" },
+            { name: "黃敏怡", type: "喜餅" },
+            { name: "張佩臻", type: "喜餅" },
+            { name: "邱家琦", type: "喜餅" },
+            { name: "邱婕瑀", type: "喜餅" },
+            { name: "賴佩吟", type: "喜餅" },
+            { name: "楊孟玟", type: "喜餅" },
+            { name: "張安琪", type: "喜餅" },
+            { name: "張寧君", type: "喜餅" },
+            { name: "劉韋萍", type: "喜餅" },
+            { name: "林宥姗", type: "喜餅" },
+            { name: "陳曉玫", type: "喜餅" },
+            { name: "莊智堯＆陳雨荷", type: "喜餅" },
+            { name: "林美賢", type: "喜餅" },
+            { name: "林上潔", type: "喜餅" },
+            { name: "王歡", type: "喜餅" },
+            { name: "葉靜蓉", type: "喜餅" },
+            { name: "彭祺惠", type: "喜餅" },
+            { name: "廖盛恩", type: "喜餅" },
+            { name: "許家馨", type: "喜餅" },
+            { name: "蕭加恩", type: "喜餅" },
+            { name: "董信慈", type: "喜餅" },
+            { name: "蘇家萱", type: "喜餅" },
+            { name: "林孟慧", type: "喜餅" },
+            { name: "楊予欣", type: "喜餅" },
+            { name: "徐宛瑜＆施政良", type: "喜餅" },
+            { name: "林箴言", type: "喜餅" },
+            { name: "陳德智＆曾法蘭", type: "喜餅" },
+            { name: "吳子潔＆李旭恩", type: "喜餅" },
+            { name: "梁孟霞", type: "喜餅" },
+            { name: "丁賢二", type: "喜餅" },
+            { name: "林明志", type: "喜餅" },
+            { name: "鍾佳純", type: "喜餅" },
+            { name: "陳俊吉", type: "喜餅" },
+            { name: "趙旭昇", type: "喜餅" },
+            { name: "蔡佩真", type: "喜餅" },
+            { name: "蔡淑宜", type: "喜餅" },
+            { name: "羅一凡", type: "喜餅" },
+            { name: "蔣祖秋", type: "喜餅" },
+            { name: "陳佳樂", type: "喜餅" },
+            { name: "江成皓", type: "喜餅" },
+            { name: "陳碧珠", type: "喜餅" },
+            { name: "王加恩", type: "喜餅" },
+            { name: "黃姿驊", type: "喜餅" },
+            { name: "劉瀚文", type: "喜餅" },
+            { name: "劉璟萱", type: "喜餅" },
+            { name: "林聖哲", type: "喜餅" },
+            { name: "陳存偉", type: "喜餅" },
+            { name: "莊于萱", type: "喜餅" },
+            { name: "王品恩", type: "喜餅" },
+            { name: "沈書婷", type: "喜餅" },
+            { name: "林榮祥", type: "喜餅" },
+            { name: "陳奕晏", type: "喜餅" },
+            { name: "陳佳美＆孫仙平", type: "喜餅" },
+            { name: "張白穗＆孫伯勻", type: "喜餅" },
+            { name: "韓松霖", type: "喜餅" },
+            { name: "江禹蓁", type: "喜餅" },
+            { name: "李欣芳", type: "喜餅" },
+            { name: "鄭佩儒", type: "喜餅" },
+            { name: "馬堉慈", type: "喜餅" },
+            { name: "徐瑋慧", type: "喜餅" },
+            { name: "侯淑鳳（素）", type: "素食喜餅" },
+            { name: "蔡惠鈴", type: "喜餅" },
+            { name: "陳品蓉", type: "喜餅" },
+            { name: "俞蓓華", type: "喜餅" },
+            { name: "陳桂枝", type: "喜餅" },
+            { name: "高連春", type: "喜餅" },
+            { name: "楊媁婷", type: "喜餅" },
+            { name: "吳琪琦＆陳宇聖", type: "喜餅" },
+            { name: "黃冠霖", type: "喜餅" },
+            { name: "丁振新", type: "喜餅" },
+            { name: "林允中", type: "喜餅" },
+            { name: "陳熙", type: "喜餅" },
+            { name: "林鼎言＆陳佳穎", type: "喜餅" },
+            { name: "陳得安", type: "喜餅" },
+            { name: "陳宇凱＆莊亦真", type: "喜餅" },
+            { name: "羅以樂", type: "喜餅" },
+            { name: "羅以欣", type: "喜餅" },
+            { name: "張蓓怡", type: "喜餅" },
+            { name: "黃馨瑩", type: "喜餅" },
+            { name: "林肯平", type: "喜餅" },
+            { name: "鄭睦宣", type: "喜餅" },
+            { name: "黃沐恩", type: "喜餅" },
+            { name: "周郁庭＆周書平", type: "喜餅" },
+            { name: "陳婉瑜", type: "喜餅" },
+            { name: "林友翔", type: "喜餅" },
+            { name: "劉加恩", type: "喜餅" },
+            { name: "孫韻嵐", type: "喜餅" },
+            { name: "陳敬庭", type: "喜餅" },
+            { name: "徐子昕", type: "喜餅" },
+            { name: "陳麒元＆涂惠盈", type: "喜餅" },
+            { name: "朱萬方＆閻貴亨", type: "喜餅" },
+            { name: "廖峻偉", type: "喜餅" },
+            { name: "李言光", type: "喜餅" },
+            { name: "黃愛薇＆康晉嘉", type: "喜餅" },
+            { name: "方艾婷＆劉振興", type: "喜餅" },
+            { name: "胡晏菽", type: "喜餅" },
+            { name: "陳守愚＆嚴吉", type: "喜餅" },
+            { name: "徐慧庭", type: "喜餅" },
+            { name: "王筠惠", type: "喜餅" },
+            { name: "黃筠晴", type: "喜餅" },
+            { name: "王博璇", type: "喜餅" },
+            { name: "陸懷恩", type: "喜餅" },
+            { name: "劉語瞳", type: "喜餅" },
+            { name: "葉宣妤", type: "喜餅" },
+            { name: "詹青頤", type: "喜餅" },
+            { name: "蔡悅聆", type: "喜餅" },
+            { name: "周驪讚", type: "喜餅" },
+            { name: "陳樂祈", type: "喜餅" },
+            { name: "陳 have容", type: "喜餅" },
+            { name: "譚筱蓉", type: "喜餅" },
+            { name: "田苡琳", type: "喜餅" },
+            { name: "潘宇希", type: "喜餅" },
+            { name: "莊昕凌", type: "喜餅" },
+            { name: "陳蓓馨", type: "喜餅" },
+            { name: "李函霏", type: "喜餅" },
+            { name: "詹子怡", type: "喜餅" },
+            { name: "蔡佳欣", type: "喜餅" }
+        ];
+
         window.seatingData = seatingData;
-        window.checkedInGuests = window.checkedInGuests || new Set();
-        window.activeTableId = null;
-
-        let currentHighlightedTableId = null;
-
-        // 清洗並正規化桌號，消除 Excel 裡 BOM 檔頭、"第 X 桌" 等不匹配情況
-        function normalizeKey(key) {
-            if (!key) return '';
-            let cleaned = key.toString()
-                .replace(/^\uFEFF/, '') // 移除 BOM 字元
-                .replace(/第/g, '')
-                .replace(/桌/g, '')
-                .trim();
-            // 如果是純數字，剔除前導零 (如 "02" 轉為 "2")
-            if (/^\d+$/.test(cleaned)) {
-                cleaned = parseInt(cleaned, 10).toString();
-            }
-            return cleaned;
-        }
+        window.cakeSeatingData = defaultCakeData;
 
         // 本地取得唯一的賓客 Key
         function getGuestKeyLocal(tableId, guestName) {
             return `${tableId}_${guestName}`.replace(/[\s\(\)（）\+]/g, '_');
         }
 
-        // 開啟賓客名單抽屜
+        // 智慧搜尋：根據賓客名字尋找對應的桌號（支援雙人組合匹配，如「吳兆洸＆鄭玉琴」）
+        function findTableByGuestName(guestName) {
+            const currentData = window.seatingData || seatingData;
+            const cleanGuestName = guestName.trim();
+            
+            // 1. 先嘗試完全一致匹配
+            for (const [tableId, guests] of Object.entries(currentData)) {
+                if (guests.includes(cleanGuestName)) {
+                    return tableId;
+                }
+            }
+            
+            // 2. 嘗試將組合名以 ＆ 或 & 拆分後比對
+            const parts = cleanGuestName.split(/[＆&]/).map(p => p.trim());
+            for (const part of parts) {
+                for (const [tableId, guests] of Object.entries(currentData)) {
+                    if (guests.some(g => g.trim() === part)) {
+                        return tableId;
+                    }
+                }
+            }
+            return null; // 若未排座，則返回 null
+        }
+
+        // 開啟桌次賓客名單底層抽屜
         function openBottomSheet(tableId) {
             window.activeTableId = tableId;
             window.renderGuestListUI(tableId);
-
-            // 顯示 Backdrop 與 Sheet
             document.getElementById('backdrop').classList.remove('hidden');
             document.getElementById('bottomSheet').classList.add('open');
         }
 
-        // 關閉抽屜
         function closeBottomSheet() {
             document.getElementById('bottomSheet').classList.remove('open');
             document.getElementById('backdrop').classList.add('hidden');
             window.activeTableId = null;
         }
 
-        // 繪製抽屜裡的賓客 UI
+        // 繪製桌次名單 UI
         window.renderGuestListUI = function(tableId) {
             const currentData = window.seatingData || seatingData;
-            
-            // 使用正規化的 Key 去找名單，防止 mismatch
             const cleanTableId = normalizeKey(tableId);
             const guests = currentData[cleanTableId];
-            if (!guests) {
-                console.warn(`未找到對應的桌次名單: 輸入為 ${tableId}, 尋找 ${cleanTableId}`);
-                return;
-            }
+            if (!guests) return;
 
             const isMainTable = (cleanTableId === '主桌');
-
-            // 1. 設定抽屜標題
             document.getElementById('drawerTitle').innerText = isMainTable ? '主桌' : `第 ${cleanTableId} 桌`;
             
-            // 2. 設定左邊桌號徽章樣式
             const iconContainer = document.getElementById('drawerTableIcon');
             if (isMainTable) {
                 iconContainer.innerHTML = '<i class="fa-solid fa-crown text-amber-300"></i>';
@@ -688,7 +1063,6 @@
                 iconContainer.className = "w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-black text-sm";
             }
 
-            // 3. 渲染賓客列表
             const listContainer = document.getElementById('drawerGuestList');
             listContainer.innerHTML = '';
 
@@ -719,7 +1093,7 @@
                         <span class="text-xs opacity-40 font-mono">${index + 1}</span>
                         <div class="flex flex-col truncate">
                             <span class="truncate ${isCheckedIn ? 'line-through text-emerald-800/60' : ''}">${cleanName}</span>
-                            ${isVeg ? '<span class="text-[9px] text-amber-700 flex items-center gap-0.5 mt-0.5"><i class="fa-solid fa-leaf text-[8px]"></i>素食</span>' : ''}
+                            ${isVeg ? '<span class="text-[9px] text-amber-700 flex items-center gap-0.5 mt-0.5"><i class="fa-solid fa-leaf text-[8px]"></i>素</span>' : ''}
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5 ml-2">
@@ -733,7 +1107,83 @@
             });
         };
 
-        // 即時繪製桌位狀態（有人的桌次會跳起小綠點）
+        // 繪製喜餅名單 UI
+        window.renderCakeList = function(listToRender = null) {
+            const list = listToRender || window.cakeSeatingData || defaultCakeData;
+            const container = document.getElementById('cakeGuestList');
+            const filter = document.getElementById('filterSelect').value;
+            
+            container.innerHTML = '';
+            
+            let filteredList = list;
+            if (filter === 'delivered') {
+                filteredList = list.filter(g => {
+                    const guestKey = g.name.trim().replace(/[\s\(\)（）\+]/g, '_');
+                    return window.checkedInCakes && window.checkedInCakes.has(guestKey);
+                });
+            } else if (filter === 'undelivered') {
+                filteredList = list.filter(g => {
+                    const guestKey = g.name.trim().replace(/[\s\(\)（）\+]/g, '_');
+                    return !(window.checkedInCakes && window.checkedInCakes.has(guestKey));
+                });
+            }
+
+            if (filteredList.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">尚無符合篩選條件的喜餅名單</div>`;
+                return;
+            }
+
+            filteredList.forEach(guest => {
+                const guestKey = guest.name.trim().replace(/[\s\(\)（）\+]/g, '_');
+                const checkInfo = window.checkedInCakes && window.checkedInCakes.get(guestKey);
+                const isDelivered = !!checkInfo;
+                const isVeg = guest.type.includes('素');
+
+                // 智慧匹配桌次
+                const tableId = findTableByGuestName(guest.name);
+                const tableBadge = tableId 
+                    ? `<span class="text-[10px] font-bold text-burgundy-700 bg-burgundy-50 border border-burgundy-100 px-2 py-0.5 rounded-md flex items-center gap-1"><i class="fa-solid fa-chair text-[8px]"></i>${tableId === '主桌' ? '主桌' : `第 ${tableId} 桌`}</span>`
+                    : `<span class="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1"><i class="fa-solid fa-user text-[8px]"></i>未排座</span>`;
+
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-2xl border flex items-center justify-between transition-all duration-200 cursor-pointer active:scale-98 ${
+                    isDelivered 
+                    ? 'bg-emerald-50/70 border-emerald-300 text-slate-800 font-medium' 
+                    : isVeg 
+                        ? 'bg-amber-50/80 border-amber-300 text-slate-900 border-2' // 素食高亮
+                        : 'bg-white border-rose-50 text-slate-700 hover:border-rose-100'
+                }`;
+
+                item.onclick = () => {
+                    window.handleCakeClick(guest.name, guest.type, isDelivered);
+                };
+
+                item.innerHTML = `
+                    <div class="flex flex-col gap-1 truncate">
+                        <span class="font-bold text-sm ${isDelivered ? 'line-through text-slate-400' : 'text-slate-800'}">${guest.name}</span>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="text-[10px] font-bold ${
+                                isVeg 
+                                ? 'text-amber-800 bg-amber-100 border border-amber-300/40' 
+                                : 'text-roseGold-500 bg-rose-50'
+                            } px-2 py-0.5 rounded-md">
+                                ${isVeg ? '<i class="fa-solid fa-leaf mr-1"></i>素食喜餅' : '<i class="fa-solid fa-gift mr-1"></i>喜餅'}
+                            </span>
+                            ${tableBadge}
+                        </div>
+                    </div>
+                    <div>
+                        ${isDelivered 
+                            ? `<span class="text-xs font-black text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full flex items-center gap-1"><i class="fa-solid fa-check"></i>已領取</span>` 
+                            : `<span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">未領取</span>`
+                        }
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        };
+
+        // 更新桌次小綠點
         window.updateMapTableStatus = function() {
             const currentSeatingData = window.seatingData || seatingData;
             Object.keys(currentSeatingData).forEach(tableId => {
@@ -747,9 +1197,7 @@
                 });
 
                 const existingBadge = targetWrapper.querySelector('.checkin-badge');
-                if (existingBadge) {
-                    existingBadge.remove();
-                }
+                if (existingBadge) existingBadge.remove();
 
                 if (hasAnyCheckin) {
                     const badge = document.createElement('div');
@@ -759,7 +1207,7 @@
             });
         };
 
-        // 更新現場出席儀表板資料與開飯指標提示
+        // 更新桌次出席率儀表板
         window.updateAttendanceDashboard = function() {
             const currentData = window.seatingData || seatingData;
             let totalGuests = 0;
@@ -778,9 +1226,7 @@
                         tableHasArrived = true;
                     }
                 });
-                if (tableHasArrived) {
-                    occupiedTablesCount++;
-                }
+                if (tableHasArrived) occupiedTablesCount++;
             });
 
             const guestPercent = totalGuests > 0 ? Math.round((arrivedGuests / totalGuests) * 100) : 0;
@@ -800,95 +1246,159 @@
                 feastBanner.innerHTML = `
                     <div class="flex flex-col items-center gap-1.5">
                         <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl animate-bounce">
-                            🎉
+                            <i class="fa-solid fa-champagne-glasses text-lg animate-bounce"></i>
                         </div>
                         <div>
-                            <h3 class="font-black text-sm tracking-wide text-amber-50">已到場賓客已達 ${guestPercent}%！</h3>
-                            <p class="text-[11px] text-amber-100 mt-0.5">（已超越開飯推薦標準 70%，建議通知開飯！）</p>
+                            <h3 class="font-black text-sm text-amber-50">到場率已達 ${guestPercent}%！</h3>
+                            <p class="text-[11px] text-amber-100 mt-0.5">（已超越開飯推薦標準 70%，建議準備開飯！）</p>
                         </div>
                     </div>
-                    <span class="w-full bg-white text-amber-950 text-xs font-black py-2 rounded-full shadow-sm tracking-wider flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-utensils"></i> 建議正式開飯
-                    </span>
                 `;
             } else {
                 const targetCount = Math.ceil(totalGuests * 0.7);
                 const guestsLeft = targetCount - arrivedGuests;
-                feastBanner.className = "mt-4 p-4 rounded-2xl bg-slate-50 text-slate-600 border border-slate-200 flex items-center gap-3.5";
+                feastBanner.className = "mt-4 p-3 rounded-2xl bg-slate-50 text-slate-600 border border-slate-200 flex items-center gap-3.5";
                 feastBanner.innerHTML = `
-                    <div class="w-9 h-9 rounded-full bg-slate-200/60 flex items-center justify-center text-base text-slate-500 shrink-0">
-                        ⏳
+                    <div class="w-9 h-9 rounded-full bg-slate-200/60 flex items-center justify-center text-base shrink-0">
+                        <i class="fa-solid fa-hourglass-half text-slate-500"></i>
                     </div>
-                    <div>
+                    <div class="text-left">
                         <h3 class="font-bold text-xs text-slate-700">目前到場率 ${guestPercent}%</h3>
-                        <p class="text-[10px] text-slate-400 mt-0.5">開飯指標為 70%（約需 ${targetCount} 人），還差 ${guestsLeft > 0 ? guestsLeft : 0} 人，請接待人員繼續引導入座。</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">開飯指標 70%（約 ${targetCount} 人），還差 ${guestsLeft > 0 ? guestsLeft : 0} 人。</p>
                     </div>
                 `;
             }
         };
 
-        // 賓客關鍵字搜尋
+        // 更新喜餅發放儀表板
+        window.updateCakeDashboard = function() {
+            const list = window.cakeSeatingData || defaultCakeData;
+            const total = list.length;
+            let delivered = 0;
+
+            list.forEach(g => {
+                const guestKey = g.name.trim().replace(/[\s\(\)(\)（）\+]/g, '_');
+                if (window.checkedInCakes && window.checkedInCakes.has(guestKey)) {
+                    delivered++;
+                }
+            });
+
+            const remaining = total - delivered;
+            const percent = total > 0 ? Math.round((delivered / total) * 100) : 0;
+
+            document.getElementById('statsTotalCakes').innerText = total;
+            document.getElementById('statsDeliveredCakes').innerText = delivered;
+            document.getElementById('statsRemainingCakes').innerText = remaining;
+            document.getElementById('statsCakePercent').innerText = `${percent}%`;
+            document.getElementById('statsCakeProgressBar').style.width = `${percent}%`;
+        };
+
+        // 智慧搜尋引擎（自動分辨目前 Tab 模式）
         function handleSearch(query) {
             const resultsDiv = document.getElementById('searchResults');
             const clearBtn = document.getElementById('clearSearchBtn');
-            const currentData = window.seatingData || seatingData;
 
             if (!query.trim()) {
                 resultsDiv.classList.add('hidden');
                 clearBtn.classList.add('hidden');
                 resetCurrentHighlight();
+                if (currentTab === 'cakes') window.renderCakeList();
                 return;
             }
 
             clearBtn.classList.remove('hidden');
             const trimmed = query.toLowerCase().trim();
-            const matches = [];
 
-            Object.keys(currentData).forEach(tableId => {
-                currentData[tableId].forEach(guest => {
-                    if (guest.toLowerCase().includes(trimmed)) {
-                        matches.push({
-                            tableId: tableId,
-                            displayName: guest
-                        });
-                    }
+            if (currentTab === 'seating') {
+                // 桌位圖搜尋模式
+                const currentData = window.seatingData || seatingData;
+                const matches = [];
+
+                Object.keys(currentData).forEach(tableId => {
+                    currentData[tableId].forEach(guest => {
+                        if (guest.toLowerCase().includes(trimmed)) {
+                            matches.push({ tableId: tableId, displayName: guest });
+                        }
+                    });
                 });
-            });
 
-            if (matches.length > 0) {
-                resultsDiv.innerHTML = '';
-                matches.forEach(match => {
-                    const option = document.createElement('div');
-                    option.className = "px-4 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0 flex justify-between items-center transition";
-                    
-                    const isVeg = match.displayName.includes('素');
-                    const cleanName = match.displayName.replace(/（素）/g, '').replace(/\(素\)/g, '').replace(/素/g, '');
+                if (matches.length > 0) {
+                    resultsDiv.innerHTML = '';
+                    matches.forEach(match => {
+                        const option = document.createElement('div');
+                        option.className = "px-4 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0 flex justify-between items-center transition";
+                        
+                        const isVeg = match.displayName.includes('素');
+                        const cleanName = match.displayName.replace(/（素）/g, '').replace(/\(素\)/g, '').replace(/素/g, '');
+                        const guestKey = getGuestKeyLocal(match.tableId, match.displayName);
+                        const isCheckedIn = window.checkedInGuests && window.checkedInGuests.has(guestKey);
 
-                    const guestKey = getGuestKeyLocal(match.tableId, match.displayName);
-                    const isCheckedIn = window.checkedInGuests && window.checkedInGuests.has(guestKey);
+                        option.onclick = () => {
+                            resultsDiv.classList.add('hidden');
+                            highlightAndScrollToTable(match.tableId);
+                            openBottomSheet(match.tableId);
+                        };
 
-                    option.onclick = () => {
-                        resultsDiv.classList.add('hidden');
-                        highlightAndScrollToTable(match.tableId);
-                        openBottomSheet(match.tableId);
-                    };
-
-                    option.innerHTML = `
-                        <div class="flex items-center gap-2">
-                            <span class="font-semibold ${isCheckedIn ? 'text-emerald-700 line-through' : 'text-slate-800'}">${cleanName}</span>
-                            ${isVeg ? '<span class="text-[9px] bg-amber-500 text-white px-1.5 py-0.2 rounded-full"><i class="fa-solid fa-leaf text-[8px]"></i>素</span>' : ''}
-                            ${isCheckedIn ? '<span class="text-[9px] bg-emerald-600 text-white px-1 py-0.2 rounded-full">已到</span>' : ''}
-                        </div>
-                        <span class="text-xs bg-amber-100 text-[#8c1c1c] font-black px-2 py-0.5 rounded-full">
-                            ${match.tableId === '主桌' ? '主桌' : `第 ${match.tableId} 桌`}
-                        </span>
-                    `;
-                    resultsDiv.appendChild(option);
-                });
-                resultsDiv.classList.remove('hidden');
+                        option.innerHTML = `
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold ${isCheckedIn ? 'text-emerald-700 line-through' : 'text-slate-800'}">${cleanName}</span>
+                                ${isVeg ? '<span class="text-[9px] bg-amber-500 text-white px-1.5 py-0.2 rounded-full">素</span>' : ''}
+                                ${isCheckedIn ? '<span class="text-[9px] bg-emerald-600 text-white px-1 py-0.2 rounded-full">已到</span>' : ''}
+                            </div>
+                            <span class="text-xs bg-amber-100 text-[#8c1c1c] font-black px-2 py-0.5 rounded-full">
+                                ${match.tableId === '主桌' ? '主桌' : `第 ${match.tableId} 桌`}
+                            </span>
+                        `;
+                        resultsDiv.appendChild(option);
+                    });
+                    resultsDiv.classList.remove('hidden');
+                } else {
+                    resultsDiv.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">找不到名單中有「${query}」的賓客</div>`;
+                    resultsDiv.classList.remove('hidden');
+                }
             } else {
-                resultsDiv.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">找不到名單中有「${query}」的賓客</div>`;
-                resultsDiv.classList.remove('hidden');
+                // 喜餅搜尋模式
+                const list = window.cakeSeatingData || defaultCakeData;
+                const matches = list.filter(g => g.name.toLowerCase().includes(trimmed));
+
+                if (matches.length > 0) {
+                    resultsDiv.innerHTML = '';
+                    matches.forEach(match => {
+                        const option = document.createElement('div');
+                        option.className = "px-4 py-3 hover:bg-rose-50 cursor-pointer border-b border-rose-50 last:border-b-0 flex justify-between items-center transition";
+                        
+                        const guestKey = match.name.trim().replace(/[\s\(\)（）\+]/g, '_');
+                        const isDelivered = window.checkedInCakes && window.checkedInCakes.has(guestKey);
+                        const isVeg = match.type.includes('素');
+
+                        option.onclick = () => {
+                            resultsDiv.classList.add('hidden');
+                            document.getElementById('searchInput').value = match.name;
+                            window.renderCakeList([match]);
+                        };
+
+                        option.innerHTML = `
+                            <div class="flex flex-col text-left">
+                                <span class="font-bold text-xs ${isDelivered ? 'text-slate-400 line-through' : 'text-slate-800'}">${match.name}</span>
+                                <span class="text-[9px] font-semibold text-roseGold-500 mt-0.5">${match.type}</span>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                isDelivered 
+                                ? 'bg-emerald-100 text-emerald-700' 
+                                : isVeg 
+                                    ? 'bg-amber-100 text-amber-700'
+                                    : 'bg-rose-100 text-roseGold-700'
+                            }">
+                                ${isDelivered ? '已發放' : isVeg ? '素食未領' : '未領取'}
+                            </span>
+                        `;
+                        resultsDiv.appendChild(option);
+                    });
+                    resultsDiv.classList.remove('hidden');
+                } else {
+                    resultsDiv.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">找不到含有「${query}」的喜餅賓客</div>`;
+                    resultsDiv.classList.remove('hidden');
+                }
             }
         }
 
@@ -897,14 +1407,13 @@
             document.getElementById('searchResults').classList.add('hidden');
             document.getElementById('clearSearchBtn').classList.add('hidden');
             resetCurrentHighlight();
+            if (currentTab === 'cakes') window.renderCakeList();
         }
 
         function resetCurrentHighlight() {
             if (currentHighlightedTableId) {
                 const prevElem = document.getElementById(`table-${currentHighlightedTableId}`)?.firstElementChild;
-                if (prevElem) {
-                    prevElem.classList.remove('animate-highlight');
-                }
+                if (prevElem) prevElem.classList.remove('animate-highlight');
                 currentHighlightedTableId = null;
             }
         }
@@ -920,7 +1429,7 @@
             }
         }
 
-        // ⚙️ 系統設定面板控制
+        // 隱藏設定解鎖控制
         window.openSettingsModal = function() {
             document.getElementById('settingsModal').classList.remove('hidden');
             document.getElementById('settingSheetId').value = localStorage.getItem('custom_sheet_id') || '11nPoCdiFalNKW0WjUh07aO8wjc52w-Xg00FSYNbaiCU';
@@ -928,7 +1437,7 @@
 
             const statusLabel = document.getElementById('settingsSyncStatus');
             statusLabel.className = "text-emerald-700 bg-emerald-50 font-bold px-2 py-0.5 rounded-full text-[11px] border border-emerald-100";
-            statusLabel.innerText = "雲端已連動";
+            statusLabel.innerText = "雲端同步運作中";
         };
 
         window.closeSettingsModal = function() {
@@ -939,17 +1448,11 @@
             const sheetIdVal = document.getElementById('settingSheetId').value.trim();
             const urlVal = document.getElementById('settingFirebaseUrl').value.trim();
 
-            if (sheetIdVal) {
-                localStorage.setItem('custom_sheet_id', sheetIdVal);
-            } else {
-                localStorage.removeItem('custom_sheet_id');
-            }
+            if (sheetIdVal) localStorage.setItem('custom_sheet_id', sheetIdVal);
+            else localStorage.removeItem('custom_sheet_id');
 
-            if (urlVal) {
-                localStorage.setItem('custom_db_url', urlVal);
-            } else {
-                localStorage.removeItem('custom_db_url');
-            }
+            if (urlVal) localStorage.setItem('custom_db_url', urlVal);
+            else localStorage.removeItem('custom_db_url');
 
             window.location.reload();
         };
@@ -960,7 +1463,7 @@
             window.location.reload();
         };
 
-        // Google 試算表串接與正規化覆蓋處理
+        // 🔄 解析一站式 Google 試算表（同時自動產生最新桌次與女方喜餅名單）
         async function fetchGoogleSheetData() {
             const savedSheetId = localStorage.getItem('custom_sheet_id') || '11nPoCdiFalNKW0WjUh07aO8wjc52w-Xg00FSYNbaiCU';
             const url = `https://docs.google.com/spreadsheets/d/${savedSheetId}/export?format=csv`;
@@ -1004,66 +1507,105 @@
 
                 if (rows.length < 2) return;
 
+                // 智慧欄位定位偵測
                 let tableColIdx = 1;
                 let nameColIdx = 0;
-                let col0Score = 0;
-                let col1Score = 0;
-
-                for (let r = 0; r < Math.min(rows.length, 10); r++) {
-                    if (!rows[r] || rows[r].length < 2) continue;
-                    const val0 = normalizeKey(rows[r][0]);
-                    const val1 = normalizeKey(rows[r][1]);
-                    if (val0 === '主桌' || /^\d+$/.test(val0)) col0Score++;
-                    if (val1 === '主桌' || /^\d+$/.test(val1)) col1Score++;
-                }
-
-                if (col0Score > col1Score) {
-                    tableColIdx = 0;
-                    nameColIdx = 1;
-                } else {
-                    tableColIdx = 1;
-                    nameColIdx = 0;
+                let cakeColIdx = -1;
+                
+                const header = rows[0];
+                for (let c = 0; c < header.length; c++) {
+                    const colName = header[c] || '';
+                    if (colName.includes('名') || colName.includes('賓客')) nameColIdx = c;
+                    if (colName.includes('桌') || colName.includes('次')) tableColIdx = c;
+                    if (colName.includes('餅') || colName.includes('禮盒') || colName.includes('款式')) cakeColIdx = c;
                 }
 
                 const newSeatingData = {};
-                const firstRowTableVal = normalizeKey(rows[0][tableColIdx]);
-                const isHeader = (rows[0][nameColIdx] || '').includes('名') || (rows[0][tableColIdx] || '').includes('桌') || (firstRowTableVal === '');
-                const startIdx = isHeader ? 1 : 0;
+                const newCakeData = [];
 
-                for (let i = startIdx; i < rows.length; i++) {
+                // 解析每一列
+                for (let i = 1; i < rows.length; i++) {
                     const r = rows[i];
-                    if (r.length < 2) continue;
-                    const tableIdClean = normalizeKey(r[tableColIdx]);
-                    const guestName = r[nameColIdx].trim();
-                    if (!tableIdClean || !guestName || tableIdClean === '') continue;
+                    if (!r || r.length < 2) continue;
                     
-                    if (!newSeatingData[tableIdClean]) {
-                        newSeatingData[tableIdClean] = [];
+                    const guestName = r[nameColIdx]?.trim();
+                    const tableIdClean = normalizeKey(r[tableColIdx]);
+                    if (!guestName || guestName === '') continue;
+
+                    // 1. 桌位資料提取
+                    if (tableIdClean && tableIdClean !== '') {
+                        if (!newSeatingData[tableIdClean]) {
+                            newSeatingData[tableIdClean] = [];
+                        }
+                        newSeatingData[tableIdClean].push(guestName);
                     }
-                    newSeatingData[tableIdClean].push(guestName);
+
+                    // 2. 喜餅資料提取 (智慧匹配單人與雙人喜餅禮盒)
+                    let cakeType = "喜餅"; 
+                    if (cakeColIdx !== -1 && r[cakeColIdx]) {
+                        cakeType = r[cakeColIdx].trim();
+                        if (cakeType !== "" && cakeType !== "無" && cakeType !== "0") {
+                            newCakeData.push({ name: guestName, type: cakeType });
+                        }
+                    } else {
+                        // 若無喜餅欄位，智慧判斷女方或指定名單
+                        const rowStr = r.join('');
+                        if (rowStr.includes('素')) {
+                            cakeType = "素食喜餅";
+                        }
+                        
+                        // 智慧匹配：如果 defaultCakeData 包含此人，或者此人是雙人組中的一人
+                        const matchingCake = defaultCakeData.find(d => {
+                            if (d.name === guestName) return true;
+                            // 拆分帶有 ＆ 或 & 的雙人組合名字進行模糊比對
+                            const parts = d.name.split(/[＆&]/).map(p => p.trim());
+                            return parts.includes(guestName);
+                        });
+                        
+                        if (matchingCake) {
+                            // 避免重複添加同一個雙人喜餅禮盒
+                            const alreadyAdded = newCakeData.some(n => n.name === matchingCake.name);
+                            if (!alreadyAdded) {
+                                newCakeData.push({ name: matchingCake.name, type: matchingCake.type });
+                            }
+                        }
+                    }
                 }
 
                 if (Object.keys(newSeatingData).length > 0) {
                     window.seatingData = newSeatingData;
                     localStorage.setItem('cached_seating_data', JSON.stringify(newSeatingData));
-                    window.updateMapTableStatus();
-                    window.updateAttendanceDashboard();
                 }
+                if (newCakeData.length > 0) {
+                    window.cakeSeatingData = newCakeData;
+                    localStorage.setItem('cached_cake_data', JSON.stringify(newCakeData));
+                }
+
+                window.renderCakeList();
+                window.updateMapTableStatus();
+                window.updateAttendanceDashboard();
+                window.updateCakeDashboard();
+
             } catch (err) {
-                console.warn("雲端同步異常，自動降級為本地安全備份：", err);
-                const cachedData = localStorage.getItem('cached_seating_data');
-                if (cachedData) {
-                    window.seatingData = JSON.parse(cachedData);
-                    window.updateMapTableStatus();
-                    window.updateAttendanceDashboard();
-                }
+                console.warn("一站式名單讀取異常，改用預設快取:", err);
+                const cachedSeating = localStorage.getItem('cached_seating_data');
+                const cachedCakes = localStorage.getItem('cached_cake_data');
+                if (cachedSeating) window.seatingData = JSON.parse(cachedSeating);
+                if (cachedCakes) window.cakeSeatingData = JSON.parse(cachedCakes);
+                
+                window.renderCakeList();
+                window.updateMapTableStatus();
+                window.updateAttendanceDashboard();
+                window.updateCakeDashboard();
             }
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
             await fetchGoogleSheetData();
+            window.renderCakeList();
             window.updateMapTableStatus();
             window.updateAttendanceDashboard();
+            window.updateCakeDashboard();
         });
     </script>
 </body>
