@@ -11,7 +11,7 @@
     <!-- FontAwesome 圖示 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase Legacy Compatibility SDKs -->
+    <!-- Firebase Legacy SDKs (RTDB 連線專用) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
@@ -57,6 +57,11 @@
             50% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(220, 38, 38, 0), 0 0 25px rgba(220, 38, 38, 0.8); }
         }
         .animate-highlight { animation: pulse-highlight 1.5s infinite ease-in-out; border-color: #dc2626 !important; background-color: #fee2e2 !important; z-index: 30; }
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .animate-scaleIn { animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col overflow-x-hidden select-none pb-12">
@@ -69,7 +74,7 @@
                 <div onclick="handleSecretClick()" class="cursor-pointer active:opacity-80 transition select-none">
                     <h1 class="text-base font-black tracking-wider text-amber-100">郁翔＆蔣瑀婚宴系統</h1>
                     <p class="text-[10px] text-red-200 flex items-center gap-1.5">
-                        <span id="headerSubtitle">彭園 BCD 廳 整合管理</span>
+                        <span id="headerSubtitle" class="underline decoration-dotted decoration-amber-400">彭園 BCD 廳 整合管理 ⚙️</span>
                         <span id="syncIndicator" class="inline-flex items-center gap-1 text-[9px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.2 rounded-full">
                             <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
                             連線中...
@@ -315,6 +320,72 @@
 
     <div id="backdrop" onclick="closeBottomSheet()" class="fixed inset-0 bg-black/50 z-40 hidden"></div>
 
+    <!-- 系統管理後台 Modal (安全重設專用) -->
+    <div id="adminModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh] animate-scaleIn">
+            <div class="bg-burgundy-800 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-gears text-amber-300"></i>
+                    <h3 class="font-black text-sm tracking-wider">婚宴系統管理後台</h3>
+                </div>
+                <button onclick="closeAdminModal()" class="text-white/85 hover:text-white"><i class="fa-solid fa-xmark text-sm"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-5 flex-1 text-slate-700">
+                <!-- 資料庫連線 -->
+                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                    <h4 class="text-xs font-black text-slate-500 mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-database text-burgundy-700"></i> 雲端即時資料庫狀態
+                    </h4>
+                    <p class="text-xs text-slate-700 font-bold flex items-center gap-1.5 break-all">
+                        <span>專案網址:</span>
+                        <span class="font-mono text-[10px] text-burgundy-700">weddingseat-41c0b...</span>
+                    </p>
+                </div>
+
+                <!-- 已到場原始資料 -->
+                <div>
+                    <h4 class="text-xs font-black text-slate-500 mb-2 flex justify-between items-center">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-chair text-burgundy-700"></i> 雲端已到場名單 (<span id="adminSeatCount">0</span>)</span>
+                        <button onclick="clearAllData('guests')" class="text-[10px] text-red-600 font-bold hover:underline">一鍵清空報到</button>
+                    </h4>
+                    <div id="adminSeatList" class="max-h-28 overflow-y-auto bg-slate-50 rounded-2xl p-3 border border-slate-200 text-xs text-slate-700 font-medium space-y-1.5 no-scrollbar">
+                        <!-- 動態載入 -->
+                    </div>
+                </div>
+
+                <!-- 已領喜餅原始資料 -->
+                <div>
+                    <h4 class="text-xs font-black text-slate-500 mb-2 flex justify-between items-center">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-gift text-roseGold-500"></i> 雲端已領喜餅名單 (<span id="adminCakeCount">0</span>)</span>
+                        <button onclick="clearAllData('cakes')" class="text-[10px] text-red-600 font-bold hover:underline">一鍵清空喜餅</button>
+                    </h4>
+                    <div id="adminCakeList" class="max-h-28 overflow-y-auto bg-slate-50 rounded-2xl p-3 border border-slate-200 text-xs text-slate-700 font-medium space-y-1.5 no-scrollbar">
+                        <!-- 動態載入 -->
+                    </div>
+                </div>
+
+                <!-- 危險區 -->
+                <div class="border border-red-200 bg-red-50/50 rounded-2xl p-4 space-y-2.5">
+                    <div class="text-xs font-black text-red-800 flex items-center gap-1.5">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>危險操作區域 (正式開始前清除測試資料用)</span>
+                    </div>
+                    <p class="text-[10px] text-red-700/80 leading-relaxed">此操作將永久清除您的 Firebase 資料庫中所有座席報到與喜餅發放資料。若在婚禮測試完畢後，請務必點擊此按鈕將數據完全歸零。</p>
+                    <button onclick="resetWholeDatabase()" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3 rounded-2xl text-xs shadow-md active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>🔥 一鍵重設整個雲端資料庫</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頂部浮動輕量提示 (Toast) -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs font-bold px-5 py-3 rounded-full shadow-2xl z-[60] transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-amber-300"></i>
+        <span id="toastText">訊息</span>
+    </div>
+
     <script>
         // --- 核心資料 ---
         // 桌次座位表配置
@@ -352,7 +423,7 @@
             "31": ["陳樂祈", "陳有容", "譚筱蓉", "田苡琳", "潘宇希", "莊昕凌", "陳蓓馨", "李函霏", "詹子怡", "蔡佳欣"]
         };
 
-        // 最新喜餅名單
+        // 最新喜餅名單 (已剔除絕對信仰且加入合併項目)
         const defaultCakeData = [
             { name: "蘇展毅", type: "喜餅 (不入席)" },
             { name: "郁翔外公", type: "喜餅" },
@@ -394,6 +465,7 @@
             { name: "張乃文", type: "喜餅" },
             { name: "黃敏怡", type: "喜餅" },
             { name: "張佩臻", type: "喜餅" },
+            { name: "開誠家族", type: "喜餅" },
             { name: "邱家琦", type: "喜餅" },
             { name: "邱婕瑀", type: "喜餅" },
             { name: "賴佩吟", type: "喜餅" },
@@ -526,6 +598,7 @@
         let db;
 
         // 安全字串轉換：將特殊符號（例如：＆、空、點）在 Firebase RTDB path 規範中以 Base64 安全轉換
+        // 修正編碼錯誤，100% 避免產生不合法字元 "."
         function safeKey(str) {
             try {
                 const bytes = new TextEncoder().encode(str);
@@ -598,6 +671,9 @@
                     if (currentOpenTableId) {
                         openBottomSheet(currentOpenTableId, false);
                     }
+                    if (!document.getElementById('adminModal').classList.contains('hidden')) {
+                        renderAdminLists();
+                    }
                 });
 
                 // 即時監聽：喜餅發放資料更新
@@ -610,6 +686,9 @@
                         }
                     }
                     renderCakeList();
+                    if (!document.getElementById('adminModal').classList.contains('hidden')) {
+                        renderAdminLists();
+                    }
                 });
 
             } catch (error) {
@@ -839,21 +918,32 @@
         };
 
         function updateStats() {
-            // 計算現場賓客總數與到場數
+            // 計算現場賓客總數與到場數（依照目前畫面上實際存在的人名統計，徹底避開歷史髒資料）
             let totalGuestsCount = 0;
+            let arrivedCount = 0;
             for (let tableId in seatingData) {
-                totalGuestsCount += seatingData[tableId].length;
+                const guests = seatingData[tableId] || [];
+                totalGuestsCount += guests.length;
+                guests.forEach(name => {
+                    if (checkedInGuests.has(`${tableId}_${name}`)) {
+                        arrivedCount++;
+                    }
+                });
             }
-            const arrivedCount = checkedInGuests.size;
             const arrivedPercent = totalGuestsCount > 0 ? Math.round((arrivedCount / totalGuestsCount) * 100) : 0;
 
             document.getElementById('statsArrivedCount').innerText = `${arrivedCount} / ${totalGuestsCount} 人`;
             document.getElementById('statsArrivedPercent').innerText = `${arrivedPercent}%`;
             document.getElementById('statsGuestProgressBar').style.width = `${arrivedPercent}%`;
 
-            // 更新喜餅數據統計
+            // 更新喜餅數據統計（精準對比目前 157 組名單，排除所有已被修改/移除人名的髒資料）
             const totalCakes = defaultCakeData.length;
-            const deliveredCakes = checkedInCakes.size;
+            let deliveredCakes = 0;
+            defaultCakeData.forEach(guest => {
+                if (checkedInCakes.has(guest.name)) {
+                    deliveredCakes++;
+                }
+            });
             const remaining = totalCakes - deliveredCakes;
 
             document.getElementById('statsTotalCakes').innerText = totalCakes;
@@ -1012,9 +1102,107 @@
             document.getElementById('clearSearchBtn').classList.add('hidden');
         };
 
+        // --- 輕量自訂提示通知 (Toast) ---
+        window.showToast = function(message) {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toastText');
+            toastText.innerText = message;
+            
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2500);
+        };
+
+        // --- 後台管理系統控制與資料清除模組 ---
         window.handleSecretClick = function() {
-            const sub = document.getElementById('headerSubtitle');
-            sub.classList.toggle('text-amber-300');
+            // 開啟後台
+            document.getElementById('adminModal').classList.remove('hidden');
+            renderAdminLists();
+            showToast("已成功載入管理後台！");
+        };
+
+        window.closeAdminModal = function() {
+            document.getElementById('adminModal').classList.add('hidden');
+        };
+
+        window.renderAdminLists = function() {
+            // 1. 渲染已報到桌席
+            const seatListEl = document.getElementById('adminSeatList');
+            const seatCountEl = document.getElementById('adminSeatCount');
+            seatListEl.innerHTML = '';
+            seatCountEl.innerText = checkedInGuests.size;
+            
+            if (checkedInGuests.size === 0) {
+                seatListEl.innerHTML = '<p class="text-[10px] text-slate-400 text-center py-2">目前雲端尚無報到資料</p>';
+            } else {
+                checkedInGuests.forEach(guestKey => {
+                    const parts = guestKey.split('_');
+                    const tableId = parts[0];
+                    const name = parts[1] || '';
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center py-1 border-b border-slate-100 last:border-0";
+                    div.innerHTML = `
+                        <span class="font-bold">${tableId === '主桌' ? '主桌' : '第 ' + tableId + ' 桌'} - ${name}</span>
+                        <button onclick="deleteSingleAdminKey('guests', '${guestKey}')" class="text-red-500 hover:text-red-700 text-[10px] font-bold">刪除</button>
+                    `;
+                    seatListEl.appendChild(div);
+                });
+            }
+
+            // 2. 渲染已領喜餅
+            const cakeListEl = document.getElementById('adminCakeList');
+            const cakeCountEl = document.getElementById('adminCakeCount');
+            cakeListEl.innerHTML = '';
+            cakeCountEl.innerText = checkedInCakes.size;
+
+            if (checkedInCakes.size === 0) {
+                cakeListEl.innerHTML = '<p class="text-[10px] text-slate-400 text-center py-2">目前雲端尚無喜餅領取資料</p>';
+            } else {
+                checkedInCakes.forEach((val, name) => {
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center py-1 border-b border-slate-100 last:border-0";
+                    div.innerHTML = `
+                        <span class="font-bold">${name}</span>
+                        <button onclick="deleteSingleAdminKey('cakes', '${name}')" class="text-red-500 hover:text-red-700 text-[10px] font-bold">刪除</button>
+                    `;
+                    cakeListEl.appendChild(div);
+                });
+            }
+        };
+
+        // 刪除雲端資料庫上單一筆 Key 記錄
+        window.deleteSingleAdminKey = function(type, keyName) {
+            const encodedKey = safeKey(keyName);
+            if (db) {
+                db.ref(type + '/' + encodedKey).set(null).then(() => {
+                    showToast(`已成功將「${keyName}」從雲端移除`);
+                    renderAdminLists();
+                });
+            }
+        };
+
+        // 清空整個大分類項目 (guests 或 cakes)
+        window.clearAllData = function(type) {
+            if (db) {
+                db.ref(type).set(null).then(() => {
+                    showToast(`已清空雲端整個 「${type === 'guests' ? '座席報到' : '喜餅領取'}」 分類項目`);
+                    renderAdminLists();
+                });
+            }
+        };
+
+        // 一鍵重設整個 Firebase RTDB (清除所有測試紀錄)
+        window.resetWholeDatabase = function() {
+            if (db) {
+                db.ref().set(null).then(() => {
+                    showToast("🔥 雲端資料庫已成功重設，所有資料已歸零！");
+                    renderAdminLists();
+                });
+            }
         };
 
         window.onload = () => {
