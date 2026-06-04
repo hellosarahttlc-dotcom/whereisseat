@@ -191,48 +191,48 @@
                     <!-- 第 5 桌 -->
                     <div onclick="locateTable('5')" class="p-3 bg-slate-50/50 hover:bg-slate-100/80 border border-slate-100 rounded-2xl cursor-pointer active:scale-95 transition flex flex-col justify-center">
                         <span class="text-[10px] text-slate-400 font-bold">第 5 桌</span>
-                        <span class="text-xs text-slate-700 font-bold">預備位 1</span>
+                        <span class="text-xs text-slate-700 font-bold" id="quickBtn-5-slot-9">預備位 1</span>
                     </div>
                     <!-- 第 6 桌 -->
                     <div onclick="locateTable('6')" class="p-3 bg-slate-50/50 hover:bg-slate-100/80 border border-slate-100 rounded-2xl cursor-pointer active:scale-95 transition flex flex-col justify-center">
                         <span class="text-[10px] text-slate-400 font-bold">第 6 桌</span>
-                        <span class="text-xs text-slate-700 font-bold">預備位 2</span>
+                        <span class="text-xs text-slate-700 font-bold" id="quickBtn-6-slot-9">預備位 2</span>
                     </div>
                     <!-- 第 7 桌 -->
                     <div onclick="locateTable('7')" class="p-3 bg-slate-50/50 hover:bg-slate-100/80 border border-slate-100 rounded-2xl cursor-pointer active:scale-95 transition flex flex-col justify-center">
                         <span class="text-[10px] text-slate-400 font-bold">第 7 桌</span>
-                        <span class="text-xs text-slate-700 font-bold">預備位 3</span>
+                        <span class="text-xs text-slate-700 font-bold" id="quickBtn-7-slot-9">預備位 3</span>
                     </div>
                     <!-- 第 15 桌 -->
                     <div onclick="locateTable('15')" class="p-3 bg-slate-50/50 hover:bg-slate-100/80 border border-slate-100 rounded-2xl cursor-pointer active:scale-95 transition flex flex-col justify-center">
                         <span class="text-[10px] text-slate-400 font-bold">第 15 桌</span>
-                        <span class="text-xs text-slate-700 font-bold">預備位 4</span>
+                        <span class="text-xs text-slate-700 font-bold" id="quickBtn-15-slot-9">預備位 4</span>
                     </div>
                     <!-- 第 10 桌 -->
                     <div onclick="locateTable('10')" class="p-3 bg-amber-50/40 hover:bg-amber-100/50 border border-amber-200/60 rounded-2xl cursor-pointer active:scale-95 transition flex flex-col justify-center">
                         <span class="text-[10px] text-amber-700 font-bold flex items-center gap-1">
                             <i class="fa-solid fa-user-lock text-[9px]"></i>第 10 桌
                         </span>
-                        <span class="text-xs text-amber-900 font-bold">限郁翔長官同事</span>
+                        <span class="text-xs text-amber-900 font-bold" id="quickBtn-10-slot-9">限郁翔長官同事</span>
                     </div>
                     <!-- 第 11 桌 -->
                     <div onclick="locateTable('11')" class="p-3 bg-amber-50/40 hover:bg-amber-100/50 border border-amber-200/60 rounded-2xl cursor-pointer active:scale-95 transition flex flex-col justify-center">
                         <span class="text-[10px] text-amber-700 font-bold flex items-center gap-1">
                             <i class="fa-solid fa-user-lock text-[9px]"></i>第 11 桌
                         </span>
-                        <span class="text-xs text-amber-900 font-bold">限郁翔長官同事</span>
+                        <span class="text-xs text-amber-900 font-bold" id="quickBtn-11-slot-9">限郁翔長官同事</span>
                     </div>
                     <!-- 第 12 桌 -->
                     <div onclick="locateTable('12')" class="col-span-2 p-3 bg-amber-50/40 hover:bg-amber-100/50 border border-amber-200/60 rounded-2xl cursor-pointer active:scale-95 transition flex flex-col justify-center">
                         <span class="text-[10px] text-amber-700 font-bold flex items-center gap-1">
                             <i class="fa-solid fa-user-lock text-[9px]"></i>第 12 桌
                         </span>
-                        <span class="text-xs text-amber-900 font-bold">限郁翔長官同事限定</span>
+                        <span class="text-xs text-amber-900 font-bold" id="quickBtn-12-slot-9">限郁翔長官同事限定</span>
                     </div>
                     <!-- 第 17 桌 -->
                     <div onclick="locateTable('17')" class="col-span-2 p-3 bg-slate-50/50 hover:bg-slate-100/80 border border-slate-100 rounded-2xl cursor-pointer active:scale-95 transition flex flex-col justify-center">
                         <span class="text-[10px] text-slate-400 font-bold">第 17 桌</span>
-                        <span class="text-xs text-slate-700 font-bold">預備位 5、6、7</span>
+                        <span class="text-xs text-slate-700 font-bold" id="quickBtn-17-combined">預備位 5、6、7</span>
                     </div>
                 </div>
             </div>
@@ -308,13 +308,44 @@
                 <span id="drawerTableIcon" class="w-10 h-10 rounded-full bg-burgundy-700 text-white flex items-center justify-center font-black text-base">M</span>
                 <div>
                     <h2 id="drawerTitle" class="text-base font-bold text-slate-800">主桌</h2>
-                    <p class="text-xs text-slate-500">點擊姓名即可完成報到</p>
+                    <p class="text-xs text-slate-500">點擊姓名完成報到，點✏️可修改預備位姓名</p>
                 </div>
             </div>
             <button onclick="closeBottomSheet()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"><i class="fa-solid fa-xmark text-sm"></i></button>
         </div>
         <div class="flex-1 overflow-y-auto px-6 py-4 bg-slate-50">
             <div id="drawerGuestList" class="grid grid-cols-2 gap-2 pb-6"></div>
+        </div>
+    </div>
+
+    <!-- 預備位姓名分配 Modal -->
+    <div id="reserveEditModal" class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl flex flex-col animate-scaleIn">
+            <div class="bg-blue-800 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-amber-300"></i>
+                    <h3 class="font-black text-sm tracking-wider">分配預備位姓名</h3>
+                </div>
+                <button onclick="closeEditReserveModal()" class="text-white/85 hover:text-white"><i class="fa-solid fa-xmark text-sm"></i></button>
+            </div>
+            <div class="p-6 space-y-4 text-slate-700">
+                <div>
+                    <label class="text-xs font-black text-slate-400 block mb-1">位置資訊</label>
+                    <p id="editReserveLocation" class="text-sm font-bold text-slate-800">第 5 桌 預備位 1</p>
+                </div>
+                <div>
+                    <label for="reserveNameInput" class="text-xs font-black text-slate-400 block mb-1">賓客姓名</label>
+                    <input type="text" id="reserveNameInput" placeholder="請輸入入座賓客姓名..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800">
+                </div>
+                <div class="grid grid-cols-2 gap-2 pt-2">
+                    <button onclick="saveReserveName()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-2xl text-xs shadow-md active:scale-95 transition-all">
+                        確認分配
+                    </button>
+                    <button onclick="resetReserveName()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-2xl text-xs active:scale-95 transition-all">
+                        還原預設
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -340,6 +371,17 @@
                         <span>專案網址:</span>
                         <span class="font-mono text-[10px] text-burgundy-700">weddingseat-41c0b...</span>
                     </p>
+                </div>
+
+                <!-- 預備位分配原始資料 -->
+                <div>
+                    <h4 class="text-xs font-black text-slate-500 mb-2 flex justify-between items-center">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-user-pen text-blue-500"></i> 雲端預備位名單 (<span id="adminReserveCount">0</span>)</span>
+                        <button onclick="clearAllData('reserves')" class="text-[10px] text-red-600 font-bold hover:underline">一鍵重設預備位</button>
+                    </h4>
+                    <div id="adminReserveList" class="max-h-28 overflow-y-auto bg-slate-50 rounded-2xl p-3 border border-slate-200 text-xs text-slate-700 font-medium space-y-1.5 no-scrollbar">
+                        <!-- 動態載入 -->
+                    </div>
                 </div>
 
                 <!-- 已到場原始資料 -->
@@ -388,7 +430,7 @@
 
     <script>
         // --- 核心資料 ---
-        // 桌次座位表配置
+        // 桌次座位表配置 (馬堉慈已更換為陳玲玉)
         const seatingData = {
             "主桌": ["蘇郁翔", "蔣瑀", "男方媽媽", "女方媽媽", "郁翔爺爺", "郁翔大伯", "王文章", "王文杰", "吳兆洸", "吳兆芳", "蔣義斌（素）", "蔣侃學（素）"],
             "2": ["郁翔外公", "郁翔外婆", "王筱晴", "王筱晴", "張麗梅", "張孝毅", "張家銘", "王冠淑", "王甫丞", "王甫丞女友"],
@@ -413,7 +455,7 @@
             "21": ["開誠家族", "梁孟霞", "丁賢二", "林明志", "鍾佳純", "陳俊吉", "趙旭昇", "蔡佩真", "蔡淑宜", "羅一凡", "蔣祖秋"],
             "22": ["陳佳樂", "江成皓", "陳存偉", "林榮祥", "陳奕晏", "劉瀚文", "劉璟萱", "林聖哲", "陳宣卉", "莊傑智"],
             "23": ["王品恩", "沈書婷", "陳碧珠", "王加恩", "陳佳美", "孫仙平", "張白穗", "孫伯勻", "韓松霖", "江禹蓁"],
-            "24": ["李欣芳", "鄭佩儒", "馬堉慈", "徐瑋慧", "侯淑鳳（素）", "蔡惠鈴", "陳品蓉", "俞蓓華", "陳桂枝", "高連春"],
+            "24": ["李欣芳", "鄭佩儒", "陳玲玉", "徐瑋慧", "侯淑鳳（素）", "蔡惠鈴", "陳品蓉", "俞蓓華", "陳桂枝", "高連春"], // 馬堉慈換成陳玲玉
             "25": ["楊媁婷", "吳琪琦", "陳宇聖", "黃冠霖", "林允中", "丁振新", "陳熙"],
             "26": ["林鼎言", "陳佳穎", "陳得安", "陳宇凱", "莊亦真", "羅以樂", "羅以欣", "張蓓怡", "黃馨瑩", "林肯平"],
             "27": ["鄭睦宣", "黃沐恩", "周郁庭", "周書平", "陳婉瑜", "林友翔", "劉加恩", "孫韻嵐", "陳敬庭", "徐子昕"],
@@ -423,7 +465,7 @@
             "31": ["陳樂祈", "陳有容", "譚筱蓉", "田苡琳", "潘宇希", "莊昕凌", "陳蓓馨", "李函霏", "詹子怡", "蔡佳欣"]
         };
 
-        // 最新喜餅名單 (已剔除絕對信仰且加入合併項目)
+        // 最新喜餅名單 (已更換馬堉慈為陳玲玉，並在此加上 isPrepaid 標記免禮)
         const defaultCakeData = [
             { name: "蘇展毅", type: "喜餅 (不入席)" },
             { name: "郁翔外公", type: "喜餅" },
@@ -435,7 +477,7 @@
             { name: "劉建祥", type: "喜餅" },
             { name: "吳兆恢＆蓓英", type: "喜餅" },
             { name: "蔣義斌&蔣侃學（素）", type: "素食喜餅" },
-            { name: "葉永盛&蘇育俞", type: "喜餅" },
+            { name: "葉永盛&蘇育俞", type: "喜餅", isPrepaid: true }, // 標記已收禮/直發
             { name: "言兆芬", type: "喜餅" },
             { name: "王之瑋", type: "喜餅" },
             { name: "廖三利＆呂元虹", type: "喜餅" },
@@ -459,13 +501,13 @@
             { name: "春曉", type: "喜餅" },
             { name: "陳愛婷", type: "喜餅" },
             { name: "蔣昀穎", type: "喜餅" },
+            { name: "開誠家族", type: "喜餅" },
             { name: "彭欣鎂", type: "喜餅" },
             { name: "姜妤庭", type: "喜餅" },
             { name: "李玉琪", type: "喜餅" },
             { name: "張乃文", type: "喜餅" },
             { name: "黃敏怡", type: "喜餅" },
             { name: "張佩臻", type: "喜餅" },
-            { name: "開誠家族", type: "喜餅" },
             { name: "邱家琦", type: "喜餅" },
             { name: "邱婕瑀", type: "喜餅" },
             { name: "賴佩吟", type: "喜餅" },
@@ -490,9 +532,9 @@
             { name: "徐宛瑜＆施政良", type: "喜餅" },
             { name: "林箴言", type: "喜餅" },
             { name: "陳德智＆曾法蘭", type: "喜餅" },
-            { name: "吳子潔＆李旭恩", type: "喜餅" },
-            { name: "張慧如&徐竹昉", type: "喜餅" },
-            { name: "趙旭昇&蔡佩真", type: "喜餅" },
+            { name: "吳子潔＆李旭恩", type: "喜餅" }, // 修正為吳子潔＆李旭恩
+            { name: "張慧如&徐竹昉", type: "喜餅" }, // 新增張慧如&徐竹昉
+            { name: "趙旭昇&蔡佩真", type: "喜餅" }, // 4組重要合併喜餅項目
             { name: "林明志&鍾佳純", type: "喜餅" },
             { name: "梁孟霞&丁賢二", type: "喜餅" },
             { name: "蔡淑宜＆羅一凡", type: "喜餅" },
@@ -517,7 +559,7 @@
             { name: "江禹蓁", type: "喜餅" },
             { name: "李欣芳", type: "喜餅" },
             { name: "鄭佩儒", type: "喜餅" },
-            { name: "馬堉慈", type: "喜餅" },
+            { name: "陳玲玉", type: "喜餅", isPrepaid: true }, // 馬堉慈換成陳玲玉，並標記已收禮/直發
             { name: "徐瑋慧", type: "喜餅" },
             { name: "侯淑鳳（素）", type: "素食喜餅" },
             { name: "蔡惠鈴", type: "喜餅" },
@@ -590,6 +632,7 @@
         // --- 核心邏輯變數 ---
         let checkedInGuests = new Set();
         let checkedInCakes = new Map();
+        let customReserveNames = new Map(); // 儲存預備位的自訂更名
         let currentTab = 'seating';
         let currentOpenTableId = null;
 
@@ -597,8 +640,19 @@
         const rtdbUrl = "https://weddingseat-41c0b-default-rtdb.asia-southeast1.firebasedatabase.app/";
         let db;
 
-        // 安全字串轉換：將特殊符號（例如：＆、空、點）在 Firebase RTDB path 規範中以 Base64 安全轉換
-        // 修正編碼錯誤，100% 避免產生不合法字元 "."
+        // 預備位設定配置對照表
+        const reserveSlots = {
+            "5": [9],
+            "6": [9],
+            "7": [9],
+            "10": [9],
+            "11": [9],
+            "12": [9],
+            "15": [9],
+            "17": [6, 7, 8]
+        };
+
+        // 安全字串轉換：將特殊符號在 Firebase RTDB 中安全加密
         function safeKey(str) {
             try {
                 const bytes = new TextEncoder().encode(str);
@@ -632,6 +686,65 @@
             }
         }
 
+        // 智慧過濾判斷：回傳該名賓客是否屬於「事前已給紅包 (不收禮金/直發喜餅)」
+        function checkIsPrepaid(name) {
+            const clean = name.replace(/（素）|\(素\)/g, '').trim();
+            return (clean === "陳玲玉" || clean === "葉永盛" || clean === "蘇育俞" || clean === "葉永盛&蘇育俞" || clean === "葉永盛＆蘇育俞");
+        }
+
+        // 取得特定預備位的預設佔位名稱
+        function getDefaultReserveName(tableId, index) {
+            const defaultReserves = {
+                "5": { 9: "預備位 1" },
+                "6": { 9: "預備位 2" },
+                "7": { 9: "預備位 3" },
+                "10": { 9: "限郁翔長官同事" },
+                "11": { 9: "限郁翔長官同事" },
+                "12": { 9: "限郁翔長官同事限定" },
+                "15": { 9: "預備位 4" },
+                "17": { 6: "預備位 5", 7: "預備位 6", 8: "預備位 7" }
+            };
+            return defaultReserves[tableId]?.[index] || "預備位";
+        }
+
+        // 動態取得即時工作狀態下的座席資料
+        function getWorkingSeatingData() {
+            const data = JSON.parse(JSON.stringify(seatingData));
+            
+            // 補齊預設預備席
+            const reserves = {
+                "5": ["預備位 1"],
+                "6": ["預備位 2"],
+                "7": ["預備位 3"],
+                "10": ["限郁翔長官同事"],
+                "11": ["限郁翔長官同事"],
+                "12": ["限郁翔長官同事限定"],
+                "15": ["預備位 4"],
+                "17": ["預備位 5", "預備位 6", "預備位 7"]
+            };
+            for (const [tableId, list] of Object.entries(reserves)) {
+                if (!data[tableId]) data[tableId] = [];
+                list.forEach(name => {
+                    if (!data[tableId].includes(name)) {
+                        data[tableId].push(name);
+                    }
+                });
+            }
+            
+            // 覆寫雲端自訂的預備席更名
+            for (const [tableId, slots] of Object.entries(reserveSlots)) {
+                if (data[tableId]) {
+                    slots.forEach(index => {
+                        const lookupKey = `${tableId}_slot_${index}`;
+                        if (customReserveNames.has(lookupKey)) {
+                            data[tableId][index] = customReserveNames.get(lookupKey);
+                        }
+                    });
+                }
+            }
+            return data;
+        }
+
         // 初始化 Firebase 資料庫連結
         function initFirebase() {
             try {
@@ -654,6 +767,27 @@
                             離線模式
                         `;
                         syncEl.className = "inline-flex items-center gap-1 text-[9px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.2 rounded-full";
+                    }
+                });
+
+                // 即時監聽：預備位改名資料更新
+                db.ref('reserves').on('value', (snapshot) => {
+                    customReserveNames.clear();
+                    const data = snapshot.val() || {};
+                    for (const [key, value] of Object.entries(data)) {
+                        if (value) {
+                            customReserveNames.set(decodeSafeKey(key), value);
+                        }
+                    }
+                    updateQuickReserveButtons(); // 更新主畫面下方調度區塊文字
+                    updateStats();
+                    renderTableGrid();
+                    renderCakeList();
+                    if (currentOpenTableId) {
+                        openBottomSheet(currentOpenTableId, false);
+                    }
+                    if (!document.getElementById('adminModal').classList.contains('hidden')) {
+                        renderAdminLists();
                     }
                 });
 
@@ -696,16 +830,57 @@
             }
         }
 
+        // 更新首頁下方預備位按鈕的即時文字呈現
+        function updateQuickReserveButtons() {
+            const mappings = {
+                "quickBtn-5-slot-9": "5_slot_9",
+                "quickBtn-6-slot-9": "6_slot_9",
+                "quickBtn-7-slot-9": "7_slot_9",
+                "quickBtn-15-slot-9": "15_slot_9",
+                "quickBtn-10-slot-9": "10_slot_9",
+                "quickBtn-11-slot-9": "11_slot_9",
+                "quickBtn-12-slot-9": "12_slot_9"
+            };
+            for (const [btnId, lookup] of Object.entries(mappings)) {
+                const el = document.getElementById(btnId);
+                if (el) {
+                    if (customReserveNames.has(lookup)) {
+                        el.innerHTML = `<span class="text-blue-600 font-extrabold flex items-center gap-1"><i class="fa-solid fa-user-tag text-[9px]"></i>${customReserveNames.get(lookup)}</span>`;
+                    } else {
+                        // 還原預設標題
+                        const parts = lookup.split('_slot_');
+                        const defaultName = getDefaultReserveName(parts[0], parseInt(parts[1]));
+                        el.innerText = defaultName;
+                    }
+                }
+            }
+
+            // 特殊處理第 17 桌合併按鈕
+            const btn17 = document.getElementById('quickBtn-17-combined');
+            if (btn17) {
+                let customizedList = [];
+                [6, 7, 8].forEach(idx => {
+                    if (customReserveNames.has(`17_slot_${idx}`)) customizedList.push(customReserveNames.get(`17_slot_${idx}`));
+                });
+                if (customizedList.length > 0) {
+                    btn17.innerHTML = `<span class="text-blue-600 font-extrabold flex items-center gap-1"><i class="fa-solid fa-user-tag text-[9px]"></i>${customizedList.join('、')}</span>`;
+                } else {
+                    btn17.innerText = "預備位 5、6、7";
+                }
+            }
+        }
+
         // --- 核心輔助邏輯 ---
 
-        // 取得喜餅賓客對應的桌次權重（排序與資訊顯示用）
+        // 取得喜餅賓客對應的桌次權重（排序與資訊顯示用，全面改為依據當前工作名單做動態分析）
         function getTableWeight(cakeGuest) {
             if (cakeGuest.isReserve) return 1000;
             
+            const activeSeating = getWorkingSeatingData();
             const names = cakeGuest.name.split(/[＆&]/);
             for (const name of names) {
                 const cleanName = name.replace(/（素）|\(素\)/g, '').trim();
-                for (const [tableId, guests] of Object.entries(seatingData)) {
+                for (const [tableId, guests] of Object.entries(activeSeating)) {
                     for (const guest of guests) {
                         const cleanGuest = guest.replace(/（素）|\(素\)/g, '').trim();
                         if (cleanGuest === cleanName || cleanGuest.includes(cleanName) || cleanName.includes(cleanGuest)) {
@@ -718,29 +893,10 @@
             return 999;
         }
 
-        // 取得喜餅賓客排序權重（優先將特定賓客排至最前）
+        // 取得喜餅賓客排序權重
         function getSortWeight(cakeGuest) {
             if (cakeGuest.name === "蘇展毅" || cakeGuest.name === "郁翔外公") return -100;
             return getTableWeight(cakeGuest);
-        }
-
-        // 確保預備位在資料層中正確映射
-        function ensureReserveSeats(data) {
-            const reserves = {
-                "5": ["預備位 1"],
-                "6": ["預備位 2"],
-                "7": ["預備位 3"],
-                "10": ["限郁翔長官同事"],
-                "11": ["限郁翔長官同事"],
-                "12": ["限郁翔長官同事限定"],
-                "15": ["預備位 4"],
-                "17": ["預備位 5", "預備位 6", "預備位 7"]
-            };
-            for (const [tableId, list] of Object.entries(reserves)) {
-                if (!data[tableId]) data[tableId] = [];
-                list.forEach(name => { if (!data[tableId].includes(name)) data[tableId].push(name); });
-            }
-            return data;
         }
 
         window.renderTableGrid = function() {
@@ -756,6 +912,8 @@
                 { id: '8', col: 5 }, { id: '9', col: 7 }
             ];
 
+            const activeSeating = getWorkingSeatingData();
+
             layout.forEach(item => {
                 const div = document.createElement('div');
                 div.className = `col-start-${item.col} flex justify-center relative`;
@@ -766,7 +924,7 @@
                 
                 // 檢查該桌是否有任何一人已報到入席
                 let hasAnyArrived = false;
-                const tableGuests = seatingData[item.id] || [];
+                const tableGuests = activeSeating[item.id] || [];
                 for (let g of tableGuests) {
                     if (checkedInGuests.has(`${item.id}_${g}`)) {
                         hasAnyArrived = true;
@@ -789,7 +947,8 @@
 
         window.openBottomSheet = function(tableId, shouldOpenPanel = true) {
             currentOpenTableId = tableId;
-            const guests = seatingData[tableId] || [];
+            const activeSeating = getWorkingSeatingData();
+            const guests = activeSeating[tableId] || [];
             document.getElementById('drawerTitle').innerText = tableId === '主桌' ? '主桌' : `第 ${tableId} 桌`;
             
             // 更新抽屜左側圖示文字
@@ -804,12 +963,28 @@
 
             const list = document.getElementById('drawerGuestList');
             list.innerHTML = '';
-            guests.forEach(name => {
+            
+            const currentReserves = reserveSlots[tableId] || [];
+
+            guests.forEach((name, index) => {
                 const guestKey = `${tableId}_${name}`;
                 const isArrived = checkedInGuests.has(guestKey);
-                const btn = document.createElement('div');
-                btn.className = `p-3 rounded-xl border flex flex-col gap-1 transition cursor-pointer ${isArrived ? 'bg-emerald-100 border-emerald-500 text-emerald-900' : 'bg-white border-slate-200 text-slate-800'}`;
-                btn.onclick = () => {
+                const isReserveSlot = currentReserves.includes(index);
+                const isPrepaid = checkIsPrepaid(name); // 檢查是否事前已付紅包
+
+                const itemContainer = document.createElement('div');
+                
+                // 事前已付特別給予暖色外框
+                const borderBgClass = isArrived 
+                    ? 'bg-emerald-100 border-emerald-500 text-emerald-900' 
+                    : (isPrepaid ? 'bg-amber-50/70 border-amber-300 text-amber-900 ring-1 ring-amber-300/30' : 'bg-white border-slate-200 text-slate-800');
+
+                itemContainer.className = `p-3 rounded-xl border flex flex-col gap-1.5 transition relative ${borderBgClass}`;
+                
+                // 主要點擊報到感應區
+                const clickArea = document.createElement('div');
+                clickArea.className = "cursor-pointer flex-1 flex flex-col gap-1";
+                clickArea.onclick = () => {
                     const encodedKey = safeKey(guestKey);
                     if (isArrived) {
                         checkedInGuests.delete(guestKey);
@@ -822,11 +997,43 @@
                     updateStats();
                     renderTableGrid();
                 };
-                btn.innerHTML = `
-                    <span class="text-sm font-bold">${name}</span>
-                    <span class="text-[10px] ${isArrived ? 'text-emerald-700' : 'text-slate-400'}">${isArrived ? '● 已入席' : '○ 未入席'}</span>
+                
+                let labelSub = isArrived ? '● 已入席' : '○ 未入席';
+                if (isReserveSlot) {
+                    const defaultName = getDefaultReserveName(tableId, index);
+                    labelSub += ` ‧ ${defaultName}`;
+                }
+
+                clickArea.innerHTML = `
+                    <div class="flex flex-col gap-1">
+                        <span class="text-sm font-bold flex items-center gap-1.5">
+                            ${isReserveSlot ? '<i class="fa-solid fa-user-pen text-[10px] text-blue-500"></i>' : ''}
+                            ${name}
+                        </span>
+                        ${isPrepaid ? `
+                            <span class="inline-flex self-start items-center gap-1 text-[9px] font-black text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-full leading-none scale-95 origin-left">
+                                <i class="fa-solid fa-circle-check"></i> 💡 已收禮 ‧ 直接帶位 (免收禮金)
+                            </span>
+                        ` : ''}
+                    </div>
+                    <span class="text-[10px] ${isArrived ? 'text-emerald-700' : (isPrepaid ? 'text-amber-700 font-bold' : 'text-slate-400')}">${labelSub}</span>
                 `;
-                list.appendChild(btn);
+                itemContainer.appendChild(clickArea);
+
+                // 如果是預備位插槽，額外渲染改名按鈕 (高優先 z-10 防止穿透點擊)
+                if (isReserveSlot) {
+                    const editBtn = document.createElement('button');
+                    editBtn.className = "absolute right-2.5 top-2.5 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 transition flex items-center justify-center text-slate-500 z-10";
+                    editBtn.title = "分配此預備位姓名";
+                    editBtn.onclick = (e) => {
+                        e.stopPropagation(); // 阻止氣泡傳播，避免觸發報到
+                        openEditReserveModal(tableId, index, name);
+                    };
+                    editBtn.innerHTML = '<i class="fa-solid fa-pen text-xs text-blue-600"></i>';
+                    itemContainer.appendChild(editBtn);
+                }
+
+                list.appendChild(itemContainer);
             });
 
             if (shouldOpenPanel) {
@@ -845,6 +1052,68 @@
             if (activeHighlight) {
                 activeHighlight.classList.remove('animate-highlight');
             }
+        };
+
+        // --- 預備位姓名修改控制器 ---
+        let activeEditTableId = null;
+        let activeEditIndex = null;
+
+        window.openEditReserveModal = function(tableId, index, currentName) {
+            activeEditTableId = tableId;
+            activeEditIndex = index;
+            const defaultName = getDefaultReserveName(tableId, index);
+            
+            document.getElementById('editReserveLocation').innerText = `第 ${tableId === '主桌' ? '主桌' : tableId + ' 桌'}（原標記: ${defaultName}）`;
+            
+            const inputField = document.getElementById('reserveNameInput');
+            if (currentName === defaultName) {
+                inputField.value = '';
+            } else {
+                inputField.value = currentName;
+            }
+            
+            document.getElementById('reserveEditModal').classList.remove('hidden');
+            setTimeout(() => inputField.focus(), 150);
+        };
+
+        window.closeEditReserveModal = function() {
+            document.getElementById('reserveEditModal').classList.add('hidden');
+            activeEditTableId = null;
+            activeEditIndex = null;
+        };
+
+        window.saveReserveName = function() {
+            if (!activeEditTableId || activeEditIndex === null) return;
+            const newName = document.getElementById('reserveNameInput').value.trim();
+            const lookupKey = `${activeEditTableId}_slot_${activeEditIndex}`;
+            const dbKey = safeKey(lookupKey);
+            
+            if (db) {
+                db.ref('reserves/' + dbKey).set(newName !== "" ? newName : null).then(() => {
+                    showToast("預備位姓名已同步雲端！");
+                    closeEditReserveModal();
+                });
+            } else {
+                // 離線本地容錯
+                if (newName !== "") {
+                    customReserveNames.set(lookupKey, newName);
+                } else {
+                    customReserveNames.delete(lookupKey);
+                }
+                showToast("本地暫存預備位姓名成功！");
+                renderTableGrid();
+                renderCakeList();
+                updateStats();
+                if (currentOpenTableId) {
+                    openBottomSheet(currentOpenTableId, false);
+                }
+                closeEditReserveModal();
+            }
+        };
+
+        window.resetReserveName = function() {
+            document.getElementById('reserveNameInput').value = '';
+            saveReserveName();
         };
 
         window.renderCakeList = function() {
@@ -885,8 +1154,14 @@
                     tableLabel = "未排座";
                 }
 
+                // 智慧高亮：如果是免收禮直接領餅的貴賓，卡片呈現溫暖的琥珀金色，提示發餅同工免收紅包直接發餅
+                const isPrepaid = guest.isPrepaid === true;
+                const cardBorderBg = isDelivered 
+                    ? 'bg-emerald-50 border-emerald-200' 
+                    : (isPrepaid ? 'bg-amber-50/60 border-amber-300 ring-2 ring-amber-300/30' : 'bg-white border-rose-100');
+
                 const div = document.createElement('div');
-                div.className = `p-4 rounded-2xl border flex items-center justify-between transition cursor-pointer ${isDelivered ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-rose-100'}`;
+                div.className = `p-4 rounded-2xl border flex items-center justify-between transition cursor-pointer ${cardBorderBg}`;
                 div.onclick = () => {
                     const encodedKey = safeKey(guest.name);
                     if (isDelivered) {
@@ -899,11 +1174,18 @@
                     renderCakeList();
                 };
                 div.innerHTML = `
-                    <div class="flex flex-col">
-                        <span class="font-bold text-sm ${guest.isReserve ? 'text-blue-700' : 'text-slate-800'}">${guest.name}</span>
+                    <div class="flex flex-col gap-1 flex-1 pr-3">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="font-bold text-sm ${guest.isReserve ? 'text-blue-700' : 'text-slate-800'}">${guest.name}</span>
+                            ${isPrepaid ? `
+                                <span class="inline-flex items-center gap-1 text-[9px] font-black text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full leading-none animate-pulse">
+                                    <i class="fa-solid fa-gift text-[8px]"></i> 🎁 已收禮 ‧ 直接領餅
+                                </span>
+                            ` : ''}
+                        </div>
                         <span class="text-[10px] text-slate-400">${tableLabel} ‧ ${guest.type}</span>
                     </div>
-                    <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center ${isDelivered ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200'}">
+                    <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${isDelivered ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200'}">
                         ${isDelivered ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
                     </div>
                 `;
@@ -918,11 +1200,13 @@
         };
 
         function updateStats() {
+            const activeSeating = getWorkingSeatingData();
+            
             // 計算現場賓客總數與到場數（依照目前畫面上實際存在的人名統計，徹底避開歷史髒資料）
             let totalGuestsCount = 0;
             let arrivedCount = 0;
-            for (let tableId in seatingData) {
-                const guests = seatingData[tableId] || [];
+            for (let tableId in activeSeating) {
+                const guests = activeSeating[tableId] || [];
                 totalGuestsCount += guests.length;
                 guests.forEach(name => {
                     if (checkedInGuests.has(`${tableId}_${name}`)) {
@@ -993,22 +1277,24 @@
                 return;
             }
 
-            clearBtn.classList.remove('hidden');
+            clearBtn.className = "absolute right-3 text-slate-400 hover:text-slate-600 cursor-pointer block";
             resultsDiv.innerHTML = '';
             
             const results = [];
             const searchLower = query.toLowerCase().trim();
+            const activeSeating = getWorkingSeatingData();
 
             if (currentTab === 'seating') {
                 // 桌次分頁下僅搜尋座次
-                for (const [tableId, guests] of Object.entries(seatingData)) {
+                for (const [tableId, guests] of Object.entries(activeSeating)) {
                     guests.forEach(name => {
                         if (name.toLowerCase().includes(searchLower)) {
                             results.push({
                                 name: name,
                                 type: 'seat',
                                 location: tableId === '主桌' ? '主桌' : `第 ${tableId} 桌`,
-                                targetId: tableId
+                                targetId: tableId,
+                                isPrepaid: checkIsPrepaid(name) // 同步標註免收禮
                             });
                         }
                     });
@@ -1023,7 +1309,8 @@
                             name: guest.name,
                             type: 'cake',
                             location: `喜餅清單 (${tableLabel} - ${guest.type})`,
-                            targetId: 'cakes'
+                            targetId: 'cakes',
+                            isPrepaid: guest.isPrepaid === true
                         });
                     }
                 });
@@ -1060,13 +1347,22 @@
                         clearSearch();
                     };
 
-                    const icon = item.type === 'seat' ? '<i class="fa-solid fa-chair text-burgundy-700"></i>' : '<i class="fa-solid fa-gift text-roseGold-500"></i>';
+                    const icon = item.type === 'seat' ? '<i class="fa-solid fa-chair text-burgundy-700 text-xs"></i>' : '<i class="fa-solid fa-gift text-roseGold-500 text-xs"></i>';
+                    
+                    // 搜尋結果中直接顯示免收禮提示避免招待帶位或發餅時看錯
+                    const prepaidPill = item.isPrepaid 
+                        ? `<span class="bg-amber-50 text-amber-800 border border-amber-200 text-[9px] font-black px-1.5 py-0.5 rounded-full ml-1.5 inline-flex items-center gap-0.5 leading-none shrink-0"><i class="fa-solid fa-gift"></i> 免收禮金/直接發餅</span>` 
+                        : '';
+
                     option.innerHTML = `
-                        <div class="flex flex-col">
-                            <span class="font-bold text-sm text-slate-800">${item.name}</span>
-                            <span class="text-[10px] text-slate-400 flex items-center gap-1">${icon}${item.location}</span>
+                        <div class="flex flex-col flex-1 min-w-0 pr-2">
+                            <div class="flex items-center gap-1 min-w-0">
+                                <span class="font-bold text-sm text-slate-800 truncate">${item.name}</span>
+                                ${prepaidPill}
+                            </div>
+                            <span class="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">${icon}${item.location}</span>
                         </div>
-                        <i class="fa-solid fa-chevron-right text-xs text-slate-300"></i>
+                        <i class="fa-solid fa-chevron-right text-xs text-slate-300 shrink-0"></i>
                     `;
                     resultsDiv.appendChild(option);
                 });
@@ -1130,7 +1426,31 @@
         };
 
         window.renderAdminLists = function() {
-            // 1. 渲染已報到桌席
+            // 1. 渲染已分配預備位
+            const reserveListEl = document.getElementById('adminReserveList');
+            const reserveCountEl = document.getElementById('adminReserveCount');
+            reserveListEl.innerHTML = '';
+            reserveCountEl.innerText = customReserveNames.size;
+
+            if (customReserveNames.size === 0) {
+                reserveListEl.innerHTML = '<p class="text-[10px] text-slate-400 text-center py-2">目前雲端尚無預備位分配資料</p>';
+            } else {
+                customReserveNames.forEach((name, keyPath) => {
+                    const parts = keyPath.split('_slot_');
+                    const tableId = parts[0];
+                    const slotIndex = parts[1];
+                    const defaultName = getDefaultReserveName(tableId, slotIndex);
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center py-1 border-b border-slate-100 last:border-0";
+                    div.innerHTML = `
+                        <span class="font-bold">${tableId === '主桌' ? '主桌' : '第 ' + tableId + ' 桌'} (${defaultName}) → ${name}</span>
+                        <button onclick="deleteSingleAdminKey('reserves', '${keyPath}')" class="text-red-500 hover:text-red-700 text-[10px] font-bold">刪除</button>
+                    `;
+                    reserveListEl.appendChild(div);
+                });
+            }
+
+            // 2. 渲染已報到桌席
             const seatListEl = document.getElementById('adminSeatList');
             const seatCountEl = document.getElementById('adminSeatCount');
             seatListEl.innerHTML = '';
@@ -1153,7 +1473,7 @@
                 });
             }
 
-            // 2. 渲染已領喜餅
+            // 3. 渲染已領喜餅
             const cakeListEl = document.getElementById('adminCakeList');
             const cakeCountEl = document.getElementById('adminCakeCount');
             cakeListEl.innerHTML = '';
@@ -1179,17 +1499,17 @@
             const encodedKey = safeKey(keyName);
             if (db) {
                 db.ref(type + '/' + encodedKey).set(null).then(() => {
-                    showToast(`已成功將「${keyName}」從雲端移除`);
+                    showToast(`已從雲端安全刪除該筆項目`);
                     renderAdminLists();
                 });
             }
         };
 
-        // 清空整個大分類項目 (guests 或 cakes)
+        // 清空整個大分類項目 (guests, cakes, reserves)
         window.clearAllData = function(type) {
             if (db) {
                 db.ref(type).set(null).then(() => {
-                    showToast(`已清空雲端整個 「${type === 'guests' ? '座席報到' : '喜餅領取'}」 分類項目`);
+                    showToast(`已成功重設雲端所有項目！`);
                     renderAdminLists();
                 });
             }
