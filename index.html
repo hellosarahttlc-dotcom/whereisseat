@@ -531,21 +531,41 @@
         const rtdbUrl = "https://weddingseat-41c0b-default-rtdb.asia-southeast1.firebasedatabase.app/";
         let db;
 
-        // 安全字串轉換：將含有特殊符號的姓名/桌名，安全轉換為符合 Firebase node path 規範的 Base64 編碼
+        // 安全字串轉換：將特殊符號（例如：＆、空、點）在 Firebase RTDB path 規範中以 Base64 安全轉換
+        // 解決 RTDB 禁止 key 含有 '.'、'#'、'$'、'/'、'['、']' 等字元的限制
         function safeKey(str) {
             try {
-                return btoa(unescape(encodeURIComponent(str))).replace(/=/g, '_').replace(/\//g, '-').replace(/\+/g, '.');
+                // 採用現代瀏覽器支援的 TextEncoder/TextDecoder 取代已過時且不穩定的 escape/unescape
+                const bytes = new TextEncoder().encode(str);
+                let binString = "";
+                for (let i = 0; i < bytes.byteLength; i++) {
+                    binString += String.fromCharCode(bytes[i]);
+                }
+                // 使用 Firebase Key 相容的 URL-safe 編碼方案 (把 '+' 改成 '-', '/' 改成 '_', '=' 改成 '~')
+                // 這樣可以 100% 避免因產生 '.' 符號而導致 Firebase 拒絕寫入的問題！
+                return btoa(binString)
+                    .replace(/\+/g, '-')
+                    .replace(/\//g, '_')
+                    .replace(/=/g, '~');
             } catch(e) {
-                return str.replace(/[\.\#\$\/\[\]]/g, '_');
+                return encodeURIComponent(str).replace(/%/g, '_');
             }
         }
 
         function decodeSafeKey(str) {
             try {
-                let base64 = str.replace(/_/g, '=').replace(/-/g, '/').replace(/\./g, '+');
-                return decodeURIComponent(escape(atob(base64)));
+                let base64 = str
+                    .replace(/-/g, '+')
+                    .replace(/_/g, '/')
+                    .replace(/~/g, '=');
+                const binString = atob(base64);
+                const bytes = new Uint8Array(binString.length);
+                for (let i = 0; i < binString.length; i++) {
+                    bytes[i] = binString.charCodeAt(i);
+                }
+                return new TextDecoder().decode(bytes);
             } catch(e) {
-                return str;
+                return decodeURIComponent(str.replace(/_/g, '%'));
             }
         }
 
@@ -885,7 +905,6 @@
             clearSearch();
         };
 
-        // --- 智慧分頁搜尋邏輯 ---
         window.handleSearch = function(query) {
             const resultsDiv = document.getElementById('searchResults');
             const clearBtn = document.getElementById('clearSearchBtn');
