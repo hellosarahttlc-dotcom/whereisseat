@@ -11,6 +11,10 @@
     <!-- FontAwesome 圖示 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Firebase Legacy Compatibility SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -66,9 +70,9 @@
                     <h1 class="text-base font-black tracking-wider text-amber-100">郁翔＆蔣瑀婚宴系統</h1>
                     <p class="text-[10px] text-red-200 flex items-center gap-1.5">
                         <span id="headerSubtitle">彭園 BCD 廳 整合管理</span>
-                        <span id="syncIndicator" class="inline-flex items-center gap-1 text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded-full">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                            同步中...
+                        <span id="syncIndicator" class="inline-flex items-center gap-1 text-[9px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.2 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
+                            連線中...
                         </span>
                     </p>
                 </div>
@@ -311,13 +315,9 @@
 
     <div id="backdrop" onclick="closeBottomSheet()" class="fixed inset-0 bg-black/50 z-40 hidden"></div>
 
-    <!-- Firebase SDK 模組 (雲端即時同步核心) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+    <script>
         // --- 核心資料 ---
+        // 桌次座位表配置
         const seatingData = {
             "主桌": ["蘇郁翔", "蔣瑀", "男方媽媽", "女方媽媽", "郁翔爺爺", "郁翔大伯", "王文章", "王文杰", "吳兆洸", "吳兆芳", "蔣義斌（素）", "蔣侃學（素）"],
             "2": ["郁翔外公", "郁翔外婆", "王筱晴", "王筱晴", "張麗梅", "張孝毅", "張家銘", "王冠淑", "王甫丞", "王甫丞女友"],
@@ -352,6 +352,7 @@
             "31": ["陳樂祈", "陳有容", "譚筱蓉", "田苡琳", "潘宇希", "莊昕凌", "陳蓓馨", "李函霏", "詹子怡", "蔡佳欣"]
         };
 
+        // 最新喜餅名單 (已更正吳子潔＆李旭恩、已新增張慧如&徐竹昉)
         const defaultCakeData = [
             { name: "蘇展毅", type: "喜餅 (不入席)" },
             { name: "郁翔外公", type: "喜餅" },
@@ -418,7 +419,8 @@
             { name: "徐宛瑜＆施政良", type: "喜餅" },
             { name: "林箴言", type: "喜餅" },
             { name: "陳德智＆曾法蘭", type: "喜餅" },
-            { name: "吳子潔＆絕對信仰", type: "喜餅" },
+            { name: "吳子潔＆李旭恩", type: "喜餅" },
+            { name: "張慧如&徐竹昉", type: "喜餅" },
             { name: "梁孟霞", type: "喜餅" },
             { name: "丁賢二", type: "喜餅" },
             { name: "林明志", type: "喜餅" },
@@ -505,7 +507,6 @@
             { name: "潘宇希", type: "喜餅" },
             { name: "莊昕凌", type: "喜餅" },
             { name: "陳蓓馨", type: "喜餅" },
-            { name: "禮品總召", type: "預備餅" },
             { name: "李函霏", type: "喜餅" },
             { name: "詹子怡", type: "喜餅" },
             { name: "蔡佳欣", type: "喜餅" },
@@ -524,17 +525,98 @@
         let checkedInGuests = new Set();
         let checkedInCakes = new Map();
         let currentTab = 'seating';
-        let currentOpenTableId = null; // 追蹤目前打開的面板，用於即時更新不關閉面板
+        let currentOpenTableId = null;
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-wedding-app';
-        let db = null;
-        let auth = null;
+        // --- Firebase 連線設定 ---
+        const rtdbUrl = "https://weddingseat-41c0b-default-rtdb.asia-southeast1.firebasedatabase.app/";
+        let db;
+
+        // 安全字串轉換：將含有特殊符號的姓名/桌名，安全轉換為符合 Firebase node path 規範的 Base64 編碼
+        function safeKey(str) {
+            try {
+                return btoa(unescape(encodeURIComponent(str))).replace(/=/g, '_').replace(/\//g, '-').replace(/\+/g, '.');
+            } catch(e) {
+                return str.replace(/[\.\#\$\/\[\]]/g, '_');
+            }
+        }
+
+        function decodeSafeKey(str) {
+            try {
+                let base64 = str.replace(/_/g, '=').replace(/-/g, '/').replace(/\./g, '+');
+                return decodeURIComponent(escape(atob(base64)));
+            } catch(e) {
+                return str;
+            }
+        }
+
+        // 初始化 Firebase 資料庫連結
+        function initFirebase() {
+            try {
+                const config = { databaseURL: rtdbUrl };
+                firebase.initializeApp(config);
+                db = firebase.database();
+
+                // 監聽即時連線狀態，動態切換頂端狀態燈
+                db.ref('.info/connected').on('value', (snapshot) => {
+                    const syncEl = document.getElementById('syncIndicator');
+                    if (snapshot.val() === true) {
+                        syncEl.innerHTML = `
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            已連線同步
+                        `;
+                        syncEl.className = "inline-flex items-center gap-1 text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.2 rounded-full";
+                    } else {
+                        syncEl.innerHTML = `
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
+                            離線模式
+                        `;
+                        syncEl.className = "inline-flex items-center gap-1 text-[9px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.2 rounded-full";
+                    }
+                });
+
+                // 即時監聽：座席報到資料更新
+                db.ref('guests').on('value', (snapshot) => {
+                    checkedInGuests.clear();
+                    const data = snapshot.val() || {};
+                    for (const [key, value] of Object.entries(data)) {
+                        if (value === true) {
+                            checkedInGuests.add(decodeSafeKey(key));
+                        }
+                    }
+                    updateStats();
+                    renderTableGrid();
+                    if (currentOpenTableId) {
+                        openBottomSheet(currentOpenTableId, false); // 在背景無感刷新目前視窗
+                    }
+                });
+
+                // 即時監聽：喜餅發放資料更新
+                db.ref('cakes').on('value', (snapshot) => {
+                    checkedInCakes.clear();
+                    const data = snapshot.val() || {};
+                    for (const [key, value] of Object.entries(data)) {
+                        if (value === true) {
+                            checkedInCakes.set(decodeSafeKey(key), true);
+                        }
+                    }
+                    renderCakeList();
+                });
+
+            } catch (error) {
+                console.error("Firebase 初始化失敗:", error);
+            }
+        }
+
+        // --- 核心輔助邏輯 ---
 
         // 取得喜餅賓客對應的桌次權重（排序與資訊顯示用）
         function getTableWeight(cakeGuest) {
-            if (cakeGuest.isReserve) return 1000;
+            if (cakeGuest.isReserve) return 1000; // 預備餅一律排到最後
+            
+            // 支援全形＆與半形&拆分，方便處理「合併發放」的情況
             const names = cakeGuest.name.split(/[＆&]/);
             for (const name of names) {
+                // 自動忽視素食標記以提高比對準確度
                 const cleanName = name.replace(/（素）|\(素\)/g, '').trim();
                 for (const [tableId, guests] of Object.entries(seatingData)) {
                     for (const guest of guests) {
@@ -546,10 +628,10 @@
                     }
                 }
             }
-            return 999;
+            return 999; // 找不到對應桌次
         }
 
-        // 取得喜餅賓客排序權重
+        // 取得喜餅賓客排序權重（優先將特定賓客排至最前）
         function getSortWeight(cakeGuest) {
             if (cakeGuest.name === "蘇展毅" || cakeGuest.name === "郁翔外公") return -100;
             return getTableWeight(cakeGuest);
@@ -574,85 +656,11 @@
             return data;
         }
 
-        // --- 初始化連線同步機制 ---
-        async function initCloudSync() {
-            const syncIndicator = document.getElementById('syncIndicator');
-            
-            if (typeof __firebase_config !== 'undefined') {
-                try {
-                    const firebaseConfig = JSON.parse(__firebase_config);
-                    const app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-
-                    // 匿名登入驗證
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-
-                    // 1. 監聽賓客入席
-                    const guestsCol = collection(db, 'artifacts', appId, 'public', 'data', 'guests');
-                    onSnapshot(guestsCol, (snapshot) => {
-                        checkedInGuests.clear();
-                        snapshot.forEach(doc => {
-                            checkedInGuests.add(doc.id);
-                        });
-                        renderTableGrid();
-                        updateStats();
-                        // 如果有打開面板，即時局部更新它
-                        if (currentOpenTableId) {
-                            updateDrawerGuestList(currentOpenTableId);
-                        }
-                    }, (err) => {
-                        console.error("雲端同步錯誤：", err);
-                        showOfflineIndicator();
-                    });
-
-                    // 2. 監聽喜餅領取
-                    const cakesCol = collection(db, 'artifacts', appId, 'public', 'data', 'cakes');
-                    onSnapshot(cakesCol, (snapshot) => {
-                        checkedInCakes.clear();
-                        snapshot.forEach(doc => {
-                            checkedInCakes.set(doc.id, true);
-                        });
-                        renderCakeList();
-                        updateStats();
-                    }, (err) => {
-                        console.error("喜餅同步錯誤：", err);
-                        showOfflineIndicator();
-                    });
-
-                    // 變更為已同步燈號
-                    if (syncIndicator) {
-                        syncIndicator.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>已連線同步';
-                        syncIndicator.className = "inline-flex items-center gap-1 text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.2 rounded-full";
-                    }
-
-                } catch (e) {
-                    console.error("連線初始化失敗，啟動離線暫存模式：", e);
-                    showOfflineIndicator();
-                }
-            } else {
-                showOfflineIndicator();
-            }
-        }
-
-        function showOfflineIndicator() {
-            const syncIndicator = document.getElementById('syncIndicator');
-            if (syncIndicator) {
-                syncIndicator.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>離線模式';
-                syncIndicator.className = "inline-flex items-center gap-1 text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded-full";
-            }
-        }
-
-        // --- 地圖渲染 ---
         window.renderTableGrid = function() {
             const grid = document.getElementById('seatingGrid');
-            if (!grid) return;
             grid.innerHTML = '';
             
+            // 桌次佈局位置定義
             const layout = [
                 { id: '21', col: 1 }, { id: '22', col: 2 }, { id: '23', col: 3 }, { id: '主桌', col: 6, special: true }, { id: '10', col: 9 }, { id: '11', col: 10 }, { id: '12', col: 11 },
                 { id: '24', col: 1 }, { id: '25', col: 2 }, { id: '26', col: 3 }, { id: '3', col: 5 }, { id: '2', col: 7 }, { id: '13', col: 9 }, { id: '14', col: 10 }, { id: '15', col: 11 },
@@ -665,10 +673,11 @@
                 const div = document.createElement('div');
                 div.className = `col-start-${item.col} flex justify-center relative`;
                 div.id = `table-${item.id}`;
-                div.onclick = () => openBottomSheet(item.id);
+                div.onclick = () => openBottomSheet(item.id, true);
                 
                 const isMain = item.special;
                 
+                // 檢查該桌是否有任何一人已報到入席
                 let hasAnyArrived = false;
                 const tableGuests = seatingData[item.id] || [];
                 for (let g of tableGuests) {
@@ -691,11 +700,12 @@
             });
         };
 
-        // --- 抽屜面板控制 ---
-        window.openBottomSheet = function(tableId) {
+        window.openBottomSheet = function(tableId, shouldOpenPanel = true) {
             currentOpenTableId = tableId;
+            const guests = seatingData[tableId] || [];
             document.getElementById('drawerTitle').innerText = tableId === '主桌' ? '主桌' : `第 ${tableId} 桌`;
             
+            // 更新抽屜左側圖示文字
             const iconEl = document.getElementById('drawerTableIcon');
             if (tableId === '主桌') {
                 iconEl.innerText = '主';
@@ -705,66 +715,53 @@
                 iconEl.className = "w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-black text-base";
             }
 
-            updateDrawerGuestList(tableId);
-
-            document.getElementById('bottomSheet').classList.add('open');
-            document.getElementById('backdrop').classList.remove('hidden');
-        };
-
-        // 渲染抽屜內賓客列表與寫入雲端
-        function updateDrawerGuestList(tableId) {
-            const guests = seatingData[tableId] || [];
             const list = document.getElementById('drawerGuestList');
-            if (!list) return;
             list.innerHTML = '';
-            
             guests.forEach(name => {
                 const guestKey = `${tableId}_${name}`;
                 const isArrived = checkedInGuests.has(guestKey);
                 const btn = document.createElement('div');
                 btn.className = `p-3 rounded-xl border flex flex-col gap-1 transition cursor-pointer ${isArrived ? 'bg-emerald-100 border-emerald-500 text-emerald-900' : 'bg-white border-slate-200 text-slate-800'}`;
-                
-                btn.onclick = async () => {
-                    if (db && auth && auth.currentUser) {
-                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'guests', guestKey);
-                        if (isArrived) {
-                            await deleteDoc(docRef).catch(e => console.error(e));
-                        } else {
-                            await setDoc(docRef, { checkedIn: true, name, tableId, timestamp: Date.now() }).catch(e => console.error(e));
-                        }
+                btn.onclick = () => {
+                    const encodedKey = safeKey(guestKey);
+                    if (isArrived) {
+                        checkedInGuests.delete(guestKey);
+                        if (db) db.ref('guests/' + encodedKey).set(null);
                     } else {
-                        // 離線模擬備份
-                        if (isArrived) checkedInGuests.delete(guestKey);
-                        else checkedInGuests.add(guestKey);
-                        updateDrawerGuestList(tableId);
-                        updateStats();
-                        renderTableGrid();
+                        checkedInGuests.add(guestKey);
+                        if (db) db.ref('guests/' + encodedKey).set(true);
                     }
+                    openBottomSheet(tableId, false);
+                    updateStats();
+                    renderTableGrid(); // 同步更新地圖上桌子顏色
                 };
-
                 btn.innerHTML = `
                     <span class="text-sm font-bold">${name}</span>
                     <span class="text-[10px] ${isArrived ? 'text-emerald-700' : 'text-slate-400'}">${isArrived ? '● 已入席' : '○ 未入席'}</span>
                 `;
                 list.appendChild(btn);
             });
-        }
+
+            if (shouldOpenPanel) {
+                document.getElementById('bottomSheet').classList.add('open');
+                document.getElementById('backdrop').classList.remove('hidden');
+            }
+        };
 
         window.closeBottomSheet = function() {
             currentOpenTableId = null;
             document.getElementById('bottomSheet').classList.remove('open');
             document.getElementById('backdrop').classList.add('hidden');
             
+            // 關閉時若有高亮標記，將其移除
             const activeHighlight = document.querySelector('.animate-highlight');
             if (activeHighlight) {
                 activeHighlight.classList.remove('animate-highlight');
             }
         };
 
-        // --- 喜餅領取渲染 ---
         window.renderCakeList = function() {
             const container = document.getElementById('cakeGuestList');
-            if (!container) return;
             const filter = document.getElementById('filterSelect').value;
             const warning = document.getElementById('reserveCakeWarning');
             container.innerHTML = '';
@@ -779,6 +776,7 @@
                 if (filter === 'undelivered' && isDelivered) return;
                 if (filter === 'delivered' && !isDelivered) return;
 
+                // 若是第一個預備餅，渲染分隔標題
                 if (guest.isReserve && !showReserveHeader) {
                     showReserveHeader = true;
                     const headerDiv = document.createElement('div');
@@ -787,6 +785,7 @@
                     container.appendChild(headerDiv);
                 }
 
+                // 計算賓客對應的桌次文字
                 const tableWeight = getTableWeight(guest);
                 let tableLabel = "";
                 if (guest.isReserve) {
@@ -801,22 +800,17 @@
 
                 const div = document.createElement('div');
                 div.className = `p-4 rounded-2xl border flex items-center justify-between transition cursor-pointer ${isDelivered ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-rose-100'}`;
-                
-                div.onclick = async () => {
-                    if (db && auth && auth.currentUser) {
-                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'cakes', guest.name);
-                        if (isDelivered) {
-                            await deleteDoc(docRef).catch(e => console.error(e));
-                        } else {
-                            await setDoc(docRef, { checkedIn: true, type: guest.type, isReserve: !!guest.isReserve, timestamp: Date.now() }).catch(e => console.error(e));
-                        }
+                div.onclick = () => {
+                    const encodedKey = safeKey(guest.name);
+                    if (isDelivered) {
+                        checkedInCakes.delete(guest.name);
+                        if (db) db.ref('cakes/' + encodedKey).set(null);
                     } else {
-                        if (isDelivered) checkedInCakes.delete(guest.name);
-                        else checkedInCakes.set(guest.name, true);
-                        renderCakeList();
+                        checkedInCakes.set(guest.name, true);
+                        if (db) db.ref('cakes/' + encodedKey).set(true);
                     }
+                    renderCakeList();
                 };
-
                 div.innerHTML = `
                     <div class="flex flex-col">
                         <span class="font-bold text-sm ${guest.isReserve ? 'text-blue-700' : 'text-slate-800'}">${guest.name}</span>
@@ -829,14 +823,15 @@
                 container.appendChild(div);
             });
 
+            // 預備餅領完提示邏輯
             if (deliveredReserveCount >= 7) warning.classList.remove('hidden');
             else warning.classList.add('hidden');
 
             updateStats();
         };
 
-        // --- 統計更新 ---
         function updateStats() {
+            // 計算現場賓客總數與到場數
             let totalGuestsCount = 0;
             for (let tableId in seatingData) {
                 totalGuestsCount += seatingData[tableId].length;
@@ -844,42 +839,34 @@
             const arrivedCount = checkedInGuests.size;
             const arrivedPercent = totalGuestsCount > 0 ? Math.round((arrivedCount / totalGuestsCount) * 100) : 0;
 
-            const statsArrivedCount = document.getElementById('statsArrivedCount');
-            const statsArrivedPercent = document.getElementById('statsArrivedPercent');
-            const statsGuestProgressBar = document.getElementById('statsGuestProgressBar');
-            
-            if (statsArrivedCount) statsArrivedCount.innerText = `${arrivedCount} / ${totalGuestsCount} 人`;
-            if (statsArrivedPercent) statsArrivedPercent.innerText = `${arrivedPercent}%`;
-            if (statsGuestProgressBar) statsGuestProgressBar.style.width = `${arrivedPercent}%`;
+            document.getElementById('statsArrivedCount').innerText = `${arrivedCount} / ${totalGuestsCount} 人`;
+            document.getElementById('statsArrivedPercent').innerText = `${arrivedPercent}%`;
+            document.getElementById('statsGuestProgressBar').style.width = `${arrivedPercent}%`;
 
+            // 更新喜餅數據統計
             const totalCakes = defaultCakeData.length;
             const deliveredCakes = checkedInCakes.size;
             const remaining = totalCakes - deliveredCakes;
 
-            const statsTotalCakes = document.getElementById('statsTotalCakes');
-            const statsDeliveredCakes = document.getElementById('statsDeliveredCakes');
-            const statsRemainingCakes = document.getElementById('statsRemainingCakes');
+            document.getElementById('statsTotalCakes').innerText = totalCakes;
+            document.getElementById('statsDeliveredCakes').innerText = deliveredCakes;
+            document.getElementById('statsRemainingCakes').innerText = remaining;
 
-            if (statsTotalCakes) statsTotalCakes.innerText = totalCakes;
-            if (statsDeliveredCakes) statsDeliveredCakes.innerText = deliveredCakes;
-            if (statsRemainingCakes) statsRemainingCakes.innerText = remaining;
-
+            // 喜餅全數領取完畢橫幅控制
             const completedBanner = document.getElementById('allCakesDeliveredSuccess');
-            if (completedBanner) {
-                if (remaining === 0 && totalCakes > 0) {
-                    completedBanner.classList.remove('hidden');
-                } else {
-                    completedBanner.classList.add('hidden');
-                }
+            if (remaining === 0 && totalCakes > 0) {
+                completedBanner.classList.remove('hidden');
+            } else {
+                completedBanner.classList.add('hidden');
             }
         }
 
-        // --- Tab 頁籤切換 ---
         window.switchTab = function(tab) {
             currentTab = tab;
             document.getElementById('sectionSeating').classList.toggle('hidden', tab !== 'seating');
             document.getElementById('sectionCakes').classList.toggle('hidden', tab !== 'cakes');
             
+            // 變更導航 Tab 樣式
             document.getElementById('tabBtnSeating').className = tab === 'seating' 
                 ? "py-2 text-xs font-black rounded-full flex items-center justify-center gap-1.5 transition-all duration-300 bg-white text-burgundy-800 shadow-md" 
                 : "py-2 text-xs font-bold rounded-full flex items-center justify-center gap-1.5 transition-all duration-300 text-burgundy-200 hover:text-white";
@@ -888,6 +875,7 @@
                 ? "py-2 text-xs font-black rounded-full flex items-center justify-center gap-1.5 transition-all duration-300 bg-white text-roseGold-700 shadow-md" 
                 : "py-2 text-xs font-bold rounded-full flex items-center justify-center gap-1.5 transition-all duration-300 text-burgundy-200 hover:text-white";
 
+            // 智慧調整搜尋框 Placeholder 與清除前次搜尋
             const searchInput = document.getElementById('searchInput');
             if (tab === 'seating') {
                 searchInput.placeholder = "輸入賓客姓名尋找桌次...";
@@ -897,7 +885,7 @@
             clearSearch();
         };
 
-        // --- 搜尋邏輯 ---
+        // --- 智慧分頁搜尋邏輯 ---
         window.handleSearch = function(query) {
             const resultsDiv = document.getElementById('searchResults');
             const clearBtn = document.getElementById('clearSearchBtn');
@@ -915,6 +903,7 @@
             const searchLower = query.toLowerCase().trim();
 
             if (currentTab === 'seating') {
+                // 桌次分頁下僅搜尋座次
                 for (const [tableId, guests] of Object.entries(seatingData)) {
                     guests.forEach(name => {
                         if (name.toLowerCase().includes(searchLower)) {
@@ -928,6 +917,7 @@
                     });
                 }
             } else {
+                // 喜餅分頁下僅搜尋喜餅
                 defaultCakeData.forEach(guest => {
                     if (guest.name.toLowerCase().includes(searchLower)) {
                         const tableWeight = getTableWeight(guest);
@@ -956,6 +946,7 @@
                             document.getElementById('filterSelect').value = 'all';
                             renderCakeList();
                             
+                            // 滾動定位到相應喜餅卡片
                             setTimeout(() => {
                                 const cakeListContainer = document.getElementById('cakeGuestList');
                                 const cards = cakeListContainer.children;
@@ -986,12 +977,15 @@
             resultsDiv.classList.remove('hidden');
         };
 
+        // 定位並開啟特定桌位
         window.locateTable = function(tableId) {
             switchTab('seating');
             openBottomSheet(tableId);
             
+            // 高亮地圖上的桌位
             const targetElement = document.getElementById(`table-${tableId}`);
             if (targetElement) {
+                // 移除現有高亮
                 const activeHighlight = document.querySelector('.animate-highlight');
                 if (activeHighlight) activeHighlight.classList.remove('animate-highlight');
                 
@@ -1000,6 +994,7 @@
                     innerCircle.classList.add('animate-highlight');
                 }
                 
+                // 平滑捲動至該目標
                 targetElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
             }
         };
@@ -1012,18 +1007,20 @@
 
         window.handleSecretClick = function() {
             const sub = document.getElementById('headerSubtitle');
-            if (sub) sub.classList.toggle('text-amber-300');
+            sub.classList.toggle('text-amber-300');
         };
 
-        // 頁面初始化設定
-        ensureReserveSeats(seatingData);
-        defaultCakeData.sort((a, b) => getSortWeight(a) - getSortWeight(b));
-        renderTableGrid();
-        renderCakeList();
-        updateStats();
-
-        // 啟動連線即時同步
-        initCloudSync();
+        window.onload = () => {
+            ensureReserveSeats(seatingData);
+            
+            // 自動依照自訂優先權重大小排序喜餅名單，方便現場人員發餅
+            defaultCakeData.sort((a, b) => getSortWeight(a) - getSortWeight(b));
+            
+            initFirebase();
+            renderTableGrid();
+            renderCakeList();
+            updateStats();
+        };
     </script>
 </body>
 </html>
