@@ -352,7 +352,7 @@
             "31": ["陳樂祈", "陳有容", "譚筱蓉", "田苡琳", "潘宇希", "莊昕凌", "陳蓓馨", "李函霏", "詹子怡", "蔡佳欣"]
         };
 
-        // 最新喜餅名單 (已更正吳子潔＆李旭恩、已新增張慧如&徐竹昉)
+        // 最新喜餅名單
         const defaultCakeData = [
             { name: "蘇展毅", type: "喜餅 (不入席)" },
             { name: "郁翔外公", type: "喜餅" },
@@ -410,7 +410,6 @@
             { name: "葉靜蓉", type: "喜餅" },
             { name: "彭祺惠", type: "喜餅" },
             { name: "廖盛恩", type: "喜餅" },
-            { name: "絕對信仰", type: "喜餅" },
             { name: "蕭加恩", type: "喜餅" },
             { name: "董信慈", type: "喜餅" },
             { name: "蘇家萱", type: "喜餅" },
@@ -421,15 +420,10 @@
             { name: "陳德智＆曾法蘭", type: "喜餅" },
             { name: "吳子潔＆李旭恩", type: "喜餅" },
             { name: "張慧如&徐竹昉", type: "喜餅" },
-            { name: "梁孟霞", type: "喜餅" },
-            { name: "丁賢二", type: "喜餅" },
-            { name: "林明志", type: "喜餅" },
-            { name: "鍾佳純", type: "喜餅" },
-            { name: "陳俊吉", type: "喜餅" },
-            { name: "趙旭昇", type: "喜餅" },
-            { name: "蔡佩真", type: "喜餅" },
-            { name: "蔡淑宜", type: "喜餅" },
-            { name: "羅一凡", type: "喜餅" },
+            { name: "趙旭昇&蔡佩真", type: "喜餅" },
+            { name: "林明志&鍾佳純", type: "喜餅" },
+            { name: "梁孟霞&丁賢二", type: "喜餅" },
+            { name: "蔡淑宜＆羅一凡", type: "喜餅" },
             { name: "蔣祖秋", type: "喜餅" },
             { name: "陳佳樂", type: "喜餅" },
             { name: "江成皓", type: "喜餅" },
@@ -532,17 +526,13 @@
         let db;
 
         // 安全字串轉換：將特殊符號（例如：＆、空、點）在 Firebase RTDB path 規範中以 Base64 安全轉換
-        // 解決 RTDB 禁止 key 含有 '.'、'#'、'$'、'/'、'['、']' 等字元的限制
         function safeKey(str) {
             try {
-                // 採用現代瀏覽器支援的 TextEncoder/TextDecoder 取代已過時且不穩定的 escape/unescape
                 const bytes = new TextEncoder().encode(str);
                 let binString = "";
                 for (let i = 0; i < bytes.byteLength; i++) {
                     binString += String.fromCharCode(bytes[i]);
                 }
-                // 使用 Firebase Key 相容的 URL-safe 編碼方案 (把 '+' 改成 '-', '/' 改成 '_', '=' 改成 '~')
-                // 這樣可以 100% 避免因產生 '.' 符號而導致 Firebase 拒絕寫入的問題！
                 return btoa(binString)
                     .replace(/\+/g, '-')
                     .replace(/\//g, '_')
@@ -576,7 +566,7 @@
                 firebase.initializeApp(config);
                 db = firebase.database();
 
-                // 監聽即時連線狀態，動態切換頂端狀態燈
+                // 監聽即時連線狀態
                 db.ref('.info/connected').on('value', (snapshot) => {
                     const syncEl = document.getElementById('syncIndicator');
                     if (snapshot.val() === true) {
@@ -606,7 +596,7 @@
                     updateStats();
                     renderTableGrid();
                     if (currentOpenTableId) {
-                        openBottomSheet(currentOpenTableId, false); // 在背景無感刷新目前視窗
+                        openBottomSheet(currentOpenTableId, false);
                     }
                 });
 
@@ -631,12 +621,10 @@
 
         // 取得喜餅賓客對應的桌次權重（排序與資訊顯示用）
         function getTableWeight(cakeGuest) {
-            if (cakeGuest.isReserve) return 1000; // 預備餅一律排到最後
+            if (cakeGuest.isReserve) return 1000;
             
-            // 支援全形＆與半形&拆分，方便處理「合併發放」的情況
             const names = cakeGuest.name.split(/[＆&]/);
             for (const name of names) {
-                // 自動忽視素食標記以提高比對準確度
                 const cleanName = name.replace(/（素）|\(素\)/g, '').trim();
                 for (const [tableId, guests] of Object.entries(seatingData)) {
                     for (const guest of guests) {
@@ -648,7 +636,7 @@
                     }
                 }
             }
-            return 999; // 找不到對應桌次
+            return 999;
         }
 
         // 取得喜餅賓客排序權重（優先將特定賓客排至最前）
@@ -753,7 +741,7 @@
                     }
                     openBottomSheet(tableId, false);
                     updateStats();
-                    renderTableGrid(); // 同步更新地圖上桌子顏色
+                    renderTableGrid();
                 };
                 btn.innerHTML = `
                     <span class="text-sm font-bold">${name}</span>
