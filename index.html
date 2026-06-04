@@ -430,7 +430,7 @@
 
     <script>
         // --- 核心資料 ---
-        // 桌次座位表配置 (馬堉慈已更換為陳玲玉)
+        // 桌次座位表配置 (陳玲玉替換成功)
         const seatingData = {
             "主桌": ["蘇郁翔", "蔣瑀", "男方媽媽", "女方媽媽", "郁翔爺爺", "郁翔大伯", "王文章", "王文杰", "吳兆洸", "吳兆芳", "蔣義斌（素）", "蔣侃學（素）"],
             "2": ["郁翔外公", "郁翔外婆", "王筱晴", "王筱晴", "張麗梅", "張孝毅", "張家銘", "王冠淑", "王甫丞", "王甫丞女友"],
@@ -455,17 +455,17 @@
             "21": ["開誠家族", "梁孟霞", "丁賢二", "林明志", "鍾佳純", "陳俊吉", "趙旭昇", "蔡佩真", "蔡淑宜", "羅一凡", "蔣祖秋"],
             "22": ["陳佳樂", "江成皓", "陳存偉", "林榮祥", "陳奕晏", "劉瀚文", "劉璟萱", "林聖哲", "陳宣卉", "莊傑智"],
             "23": ["王品恩", "沈書婷", "陳碧珠", "王加恩", "陳佳美", "孫仙平", "張白穗", "孫伯勻", "韓松霖", "江禹蓁"],
-            "24": ["李欣芳", "鄭佩儒", "陳玲玉", "徐瑋慧", "侯淑鳳（素）", "蔡惠鈴", "陳品蓉", "俞蓓華", "陳桂枝", "高連春"], // 馬堉慈換成陳玲玉
+            "24": ["李欣芳", "鄭佩儒", "陳玲玉", "徐瑋慧", "侯淑鳳（素）", "蔡惠鈴", "陳品蓉", "俞蓓華", "陳桂枝", "高連春"], // 陳玲玉更替成功
             "25": ["楊媁婷", "吳琪琦", "陳宇聖", "黃冠霖", "林允中", "丁振新", "陳熙"],
             "26": ["林鼎言", "陳佳穎", "陳得安", "陳宇凱", "莊亦真", "羅以樂", "羅以欣", "張蓓怡", "黃馨瑩", "林肯平"],
             "27": ["鄭睦宣", "黃沐恩", "周郁庭", "周書平", "陳婉瑜", "林友翔", "劉加恩", "孫韻嵐", "陳敬庭", "徐子昕"],
-            "28": ["陳麒元", "涂惠盈", "陳慕祈", "朱萬方", "閻貴亨", "閻善敏", "閻善真", "閻善恩", "廖峻偉", "李言光"],
+            "28": ["陳麒元", "涂惠盈", "陳慕祈", "朱萬方", "閻關亨", "閻善敏", "閻善真", "閻善恩", "廖峻偉", "李言光"],
             "29": ["黃愛薇", "康晉嘉", "方艾婷", "劉振興", "胡晏菽", "陳守愚", "嚴吉", "陳義藍", "陳義聆", "黃姿驊"],
             "30": ["徐慧庭", "王筠惠", "黃筠晴", "王博璇", "陸懷恩", "劉語瞳", "葉宣妤", "詹青頤", "蔡悅聆", "周驪讚"],
             "31": ["陳樂祈", "陳有容", "譚筱蓉", "田苡琳", "潘宇希", "莊昕凌", "陳蓓馨", "李函霏", "詹子怡", "蔡佳欣"]
         };
 
-        // 最新喜餅名單 (已更換馬堉慈為陳玲玉，並在此加上 isPrepaid 標記免禮)
+        // 最新喜餅名單
         const defaultCakeData = [
             { name: "蘇展毅", type: "喜餅 (不入席)" },
             { name: "郁翔外公", type: "喜餅" },
@@ -477,7 +477,7 @@
             { name: "劉建祥", type: "喜餅" },
             { name: "吳兆恢＆蓓英", type: "喜餅" },
             { name: "蔣義斌&蔣侃學（素）", type: "素食喜餅" },
-            { name: "葉永盛&蘇育俞", type: "喜餅", isPrepaid: true }, // 標記已收禮/直發
+            { name: "葉永盛&蘇育俞", type: "喜餅", isPrepaid: true }, // 免收禮/直發標記
             { name: "言兆芬", type: "喜餅" },
             { name: "王之瑋", type: "喜餅" },
             { name: "廖三利＆呂元虹", type: "喜餅" },
@@ -501,13 +501,13 @@
             { name: "春曉", type: "喜餅" },
             { name: "陳愛婷", type: "喜餅" },
             { name: "蔣昀穎", type: "喜餅" },
-            { name: "開誠家族", type: "喜餅" },
             { name: "彭欣鎂", type: "喜餅" },
             { name: "姜妤庭", type: "喜餅" },
             { name: "李玉琪", type: "喜餅" },
             { name: "張乃文", type: "喜餅" },
             { name: "黃敏怡", type: "喜餅" },
             { name: "張佩臻", type: "喜餅" },
+            { name: "開誠家族", type: "喜餅" },
             { name: "邱家琦", type: "喜餅" },
             { name: "邱婕瑀", type: "喜餅" },
             { name: "賴佩吟", type: "喜餅" },
@@ -532,9 +532,9 @@
             { name: "徐宛瑜＆施政良", type: "喜餅" },
             { name: "林箴言", type: "喜餅" },
             { name: "陳德智＆曾法蘭", type: "喜餅" },
-            { name: "吳子潔＆李旭恩", type: "喜餅" }, // 修正為吳子潔＆李旭恩
-            { name: "張慧如&徐竹昉", type: "喜餅" }, // 新增張慧如&徐竹昉
-            { name: "趙旭昇&蔡佩真", type: "喜餅" }, // 4組重要合併喜餅項目
+            { name: "吳子潔＆李旭恩", type: "喜餅" }, // 已修正
+            { name: "張慧如&徐竹昉", type: "喜餅" }, // 已補入
+            { name: "趙旭昇&蔡佩真", type: "喜餅" },
             { name: "林明志&鍾佳純", type: "喜餅" },
             { name: "梁孟霞&丁賢二", type: "喜餅" },
             { name: "蔡淑宜＆羅一凡", type: "喜餅" },
@@ -559,7 +559,7 @@
             { name: "江禹蓁", type: "喜餅" },
             { name: "李欣芳", type: "喜餅" },
             { name: "鄭佩儒", type: "喜餅" },
-            { name: "陳玲玉", type: "喜餅", isPrepaid: true }, // 馬堉慈換成陳玲玉，並標記已收禮/直發
+            { name: "陳玲玉", type: "喜餅", isPrepaid: true }, // 陳玲玉喜餅 + 免收禮標記
             { name: "徐瑋慧", type: "喜餅" },
             { name: "侯淑鳳（素）", type: "素食喜餅" },
             { name: "蔡惠鈴", type: "喜餅" },
@@ -686,7 +686,7 @@
             }
         }
 
-        // 智慧過濾判斷：回傳該名賓客是否屬於「事前已給紅包 (不收禮金/直發喜餅)」
+        // 智慧過濾判斷：回傳該名賓客是否屬於「事前已給紅包 (免收禮金/直接領餅/帶位)」
         function checkIsPrepaid(name) {
             const clean = name.replace(/（素）|\(素\)/g, '').trim();
             return (clean === "陳玲玉" || clean === "葉永盛" || clean === "蘇育俞" || clean === "葉永盛&蘇育俞" || clean === "葉永盛＆蘇育俞");
@@ -707,8 +707,13 @@
             return defaultReserves[tableId]?.[index] || "預備位";
         }
 
+        // 智慧效能快取：防止深拷貝與重組在大量排序比較中重複執行導致執行緒卡死
+        let cachedWorkingSeatingData = null;
+
         // 動態取得即時工作狀態下的座席資料
         function getWorkingSeatingData() {
+            if (cachedWorkingSeatingData) return cachedWorkingSeatingData;
+
             const data = JSON.parse(JSON.stringify(seatingData));
             
             // 補齊預設預備席
@@ -742,6 +747,7 @@
                     });
                 }
             }
+            cachedWorkingSeatingData = data;
             return data;
         }
 
@@ -773,6 +779,7 @@
                 // 即時監聽：預備位改名資料更新
                 db.ref('reserves').on('value', (snapshot) => {
                     customReserveNames.clear();
+                    cachedWorkingSeatingData = null; // 清除改名快取
                     const data = snapshot.val() || {};
                     for (const [key, value] of Object.entries(data)) {
                         if (value) {
@@ -1020,7 +1027,7 @@
                 `;
                 itemContainer.appendChild(clickArea);
 
-                // 如果是預備位插槽，額外渲染改名按鈕 (高優先 z-10 防止穿透點擊)
+                // 如果是預備位插槽，額外渲染改名按鈕 (高優先 z-10 阻斷事件防穿透)
                 if (isReserveSlot) {
                     const editBtn = document.createElement('button');
                     editBtn.className = "absolute right-2.5 top-2.5 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 transition flex items-center justify-center text-slate-500 z-10";
@@ -1100,6 +1107,7 @@
                 } else {
                     customReserveNames.delete(lookupKey);
                 }
+                cachedWorkingSeatingData = null; // 清除快取
                 showToast("本地暫存預備位姓名成功！");
                 renderTableGrid();
                 renderCakeList();
@@ -1294,7 +1302,7 @@
                                 type: 'seat',
                                 location: tableId === '主桌' ? '主桌' : `第 ${tableId} 桌`,
                                 targetId: tableId,
-                                isPrepaid: checkIsPrepaid(name) // 同步標註免收禮
+                                isPrepaid: checkIsPrepaid(name) // 搜尋結果同步標示
                             });
                         }
                     });
@@ -1349,7 +1357,7 @@
 
                     const icon = item.type === 'seat' ? '<i class="fa-solid fa-chair text-burgundy-700 text-xs"></i>' : '<i class="fa-solid fa-gift text-roseGold-500 text-xs"></i>';
                     
-                    // 搜尋結果中直接顯示免收禮提示避免招待帶位或發餅時看錯
+                    // 搜尋結果中直接顯示潤飾後的免收禮直接引導提示
                     const prepaidPill = item.isPrepaid 
                         ? `<span class="bg-amber-50 text-amber-800 border border-amber-200 text-[9px] font-black px-1.5 py-0.5 rounded-full ml-1.5 inline-flex items-center gap-0.5 leading-none shrink-0"><i class="fa-solid fa-gift"></i> 免收禮金/直接發餅</span>` 
                         : '';
@@ -1526,9 +1534,8 @@
         };
 
         window.onload = () => {
-            ensureReserveSeats(seatingData);
-            
-            // 自動依照自訂優先權重大小排序喜餅名單，方便現場人員發餅
+            // 自動依照自訂優先權重大小排序喜餅名單，方便現場人員發餅 (先使用安全快取加速載入)
+            cachedWorkingSeatingData = null; 
             defaultCakeData.sort((a, b) => getSortWeight(a) - getSortWeight(b));
             
             initFirebase();
